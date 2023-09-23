@@ -170,8 +170,15 @@ def submit_gameplay(rollup: Rollup, data: RollupData) -> bool:
         print(f'{contests.contests=}')
         return False
 
+    gameplay_data = doom.decode_gameplay(payload.gameplay)
+    gameplay_data_hash = doom.hash_gameplay(gameplay_data)
+
+    if player.gameplay_hash.lower() != gameplay_data_hash.lower():
+        LOGGER.warning("Rejecting gameplay based on hash")
+        return False
+
     gameplay_filename = doom.save_gameplay_file(
-        raw_data=payload.gameplay,
+        raw_data=gameplay_data,
         contest_id=payload.contest_id,
         player=player.wallet,
     )

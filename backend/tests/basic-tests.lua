@@ -113,7 +113,7 @@ describe("tests", function()
         local res = deposit_advance(machine, ALICE_WALLET, 10, {
             action="join_contest",
             contest_id=1,
-            gameplay_hash="0x01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+            gameplay_hash="a8100ae6aa1940d0b663bb31cd466142ebbdbd5187131b92d93818987832eb89"
         })
         expect.equal(res, expected_ok_res)
     end)
