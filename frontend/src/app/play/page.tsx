@@ -63,9 +63,9 @@ const PlayGame: FC = () => {
         // @ts-ignore:next-line
         Module.HEAPU8.set(cartridgeData, buf);
         // TODO: build params from inspect state
-        let difficulty = 5;
+        let difficulty = 3;
         let level = 2;
-        let params = "-iwad doom1.wad -skill "+difficulty+" -warp 1 "+level+" -levelquit "+level+" -deathquit -nowipe -nomenu"
+        let params = "-iwad doom1.wad -skill "+difficulty+" -warp 1 "+level+" -levelquit "+level+" -deathquit -nowipe -nomenu";
         // @ts-ignore:next-line
         Module.ccall('rivemu_start_ex', null, [ 'number', 'number', 'string' ], [ buf, cartridgeData.length, params ]);
         // @ts-ignore:next-line
