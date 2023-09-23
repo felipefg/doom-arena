@@ -9,7 +9,8 @@ class ContestDatabase:
         self.contests: dict[int, Contest] = {}
         self.latest_id: int = 0
 
-    def create_contest(self, input: CreateContestInput, timestamp: int, host_wallet: str) -> Contest:
+    def create_contest(self, input: CreateContestInput, timestamp: int,
+                       host_wallet: str) -> Contest:
         new_id = self.latest_id + 1
 
         contest = Contest(

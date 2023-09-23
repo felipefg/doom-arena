@@ -28,5 +28,3 @@ class CreateContestInput(BaseModel):
     difficulty: int
     play_time: int
     submission_time: int
-
-
