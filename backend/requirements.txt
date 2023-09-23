@@ -4,7 +4,7 @@
 #
 #    pip-compile
 #
-cartesi @ git+https://github.com/prototyp3-dev/python-cartesi@de021ed88ac7220bfa3aec7ad8e57aa30d8e4b1d
+cartesi @ git+https://github.com/prototyp3-dev/python-cartesi@93b0dbea4a5ee53582b3986326bbc79ed61bcc57
     # via -r requirements.in
 certifi==2023.7.22
     # via requests
