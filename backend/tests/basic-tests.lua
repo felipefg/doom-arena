@@ -36,7 +36,7 @@ local expected_ok_res = {
 
 local function decode_response_jsons(res)
     for i,v in pairs(res.reports) do
-        res.reports[i] = json_decode(v, res[i].payload)
+        res.reports[i] = json_decode(v)
     end
     return res
 end
@@ -100,7 +100,7 @@ describe("tests", function()
 ]]
 
     it("should get active contest", function()
-        local res = inspect(machine, "active_contest")
+        local res = inspect(machine, "/active_contest")
         expect.equal(res.status, "accepted")
         expect.equal(res.reports[1], {
             contest_id=1,

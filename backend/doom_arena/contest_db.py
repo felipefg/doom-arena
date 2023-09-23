@@ -30,6 +30,8 @@ class ContestDatabase:
 
         return contest
 
+    def get_latest_contest(self) -> Contest | None:
+        return self.contests.get(self.latest_id)
 
 contests = ContestDatabase() # noqa
 
