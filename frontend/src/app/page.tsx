@@ -1,10 +1,11 @@
 "use client";
 
+import React, { FC } from "react";
 import { Button, Center, Stack } from "@mantine/core";
 import Image from "next/image";
 import Link from "next/link";
 
-export function Page() {
+const Home: FC = () => {
     return (
         <Center>
             <Stack align="center">
@@ -20,6 +21,6 @@ export function Page() {
             </Stack>
         </Center>
     );
-}
+};
 
-export default Page;
+export default Home;

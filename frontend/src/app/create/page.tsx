@@ -5,82 +5,98 @@ import {
     Button,
     Center,
     Group,
-    Image,
+    JsonInput,
     NumberInput,
-    Radio,
-    SegmentedControl,
     Stack,
-    Tabs,
-    Text,
     TextInput,
-    Title,
     useMantineTheme,
 } from "@mantine/core";
-import { FC } from "react";
+import { FC, useState } from "react";
+import { Address, toHex } from "viem";
+import { useAccount, useWaitForTransaction } from "wagmi";
 
-const MIN_PRIZE_POOL = 100;
+import { ApproveButton } from "../../components/ApproveButton";
+import {
+    erc20PortalAddress,
+    useErc20Allowance,
+    useErc20PortalDepositErc20Tokens,
+    usePrepareErc20PortalDepositErc20Tokens,
+} from "../../hooks/contracts";
+import { DifficultyLevel } from "../../components/DifficultyLevel";
+import { GameLevel } from "../../components/GameLevel";
 
-const difficultyLevels = [
-    {
-        value: "easy",
-        label: "I'm Too Young to Die",
-        image: "/img/difficulty1.png",
-    },
-    { value: "normal", label: "Hurt Me Plenty", image: "/img/difficulty2.png" },
-    { value: "hard", label: "Ultra Violence", image: "/img/difficulty3.png" },
-    { value: "impossible", label: "Nightmare", image: "/img/difficulty4.png" },
-];
-
-const episodes = [
-    {
-        name: "Knee-Deep in the Dead",
-        image: "/img/episode1.png",
-        levels: [
-            "Hangar",
-            "Nuclear Plant",
-            "Toxin Refinery",
-            "Command Control",
-            "Phobos Lab",
-            "Central Processing",
-            "Computer Station",
-            "Phobos Anomaly",
-            "Military Base",
-        ],
-    },
-    {
-        name: "The Shores of Hell",
-        image: "/img/episode2.png",
-        levels: [
-            "Deimos Anomaly",
-            "Containment Area",
-            "Refinery",
-            "Deimos Lab",
-            "Command Center",
-            "Halls of the Damned",
-            "Spawning Vats",
-            "Tower of Babel",
-            "Fortress of Mystery",
-        ],
-    },
-    {
-        name: "Inferno",
-        image: "/img/episode3.png",
-        levels: [
-            "Hell Keep",
-            "Slough of Despair",
-            "Pandemonium",
-            "House of Pain",
-            "Unholy Cathedral",
-            "Mount Erebus",
-            "Limbo",
-            "Dis",
-            "Warrens",
-        ],
-    },
-];
+const parseIfNeeded = (setter: (v: number) => void) => {
+    return (s: string | number) => {
+        if (typeof s === "number") {
+            setter(s);
+        } else {
+            setter(parseInt(s));
+        }
+    };
+};
 
 const CreateGame: FC = () => {
+    const token = process.env.NEXT_PUBLIC_TOKEN_ADDRESS as Address;
+    const dapp = process.env.NEXT_PUBLIC_DAPP_ADDRESS as Address;
     const theme = useMantineTheme();
+
+    // connected account
+    const { address } = useAccount();
+
+    // flag to show payload as debug help
+    const debug = true;
+
+    // contest name
+    const [name, setName] = useState("");
+
+    // game difficulty level
+    const [difficulty, setDifficulty] = useState(1);
+
+    // game level
+    const [level, setLevel] = useState(0);
+
+    // times
+    const [playTime, setPlayTime] = useState(60); // minutes
+    const [submissionTime, setSubmissionTime] = useState(60); // minutes
+
+    // token amounts
+    const [initialPool, setInitialPool] = useState(100);
+    const [ticketPrice, setTicketPrice] = useState(10);
+
+    // query allowance
+    const { data: allowance } = useErc20Allowance({
+        address: token,
+        args: [address!, erc20PortalAddress],
+        enabled: !!address,
+    });
+
+    // input payload (sent through ERC20-deposit)
+    const payload = {
+        action: "create_contest",
+        name,
+        ticket_price: toHex(BigInt(ticketPrice) * 10n ** 18n),
+        level: level + 1, // 1-based
+        difficulty: difficulty + 1, // 1-based
+        play_time: playTime * 60, // convert to seconds
+        submission_time: submissionTime * 60, // convert to seconds
+    };
+    const execLayerData = toHex(JSON.stringify(payload));
+
+    // ERC-20 deposit tx
+    const { config } = usePrepareErc20PortalDepositErc20Tokens({
+        args: [
+            token,
+            dapp,
+            isNaN(initialPool) ? 0n : BigInt(initialPool) * 10n ** 18n,
+            execLayerData,
+        ],
+        enabled:
+            !!allowance &&
+            !isNaN(initialPool) &&
+            BigInt(initialPool) * 10n ** 18n <= allowance,
+    });
+    const { data, write } = useErc20PortalDepositErc20Tokens(config);
+    const wait = useWaitForTransaction(data);
 
     return (
         <Center
@@ -91,138 +107,93 @@ const CreateGame: FC = () => {
                 backgroundAttachment: "fixed",
             }}
         >
-            <form>
-                <Box p={20} mt={180} bg={theme.colors.dark[7]}>
-                    <Stack w={600}>
-                        <TextInput
-                            withAsterisk
+            <Box p={20} mt={180} bg={theme.colors.dark[7]}>
+                <Stack w={600}>
+                    <TextInput
+                        withAsterisk
+                        size="lg"
+                        label="Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        description="Name of the tournament, for promotional reasons only"
+                    />
+                    <NumberInput
+                        withAsterisk
+                        size="lg"
+                        label="Initial Prize Pool"
+                        suffix=" APE"
+                        description="Initial amount of tokens in the prize pool"
+                        min={100}
+                        value={initialPool}
+                        onChange={parseIfNeeded(setInitialPool)}
+                    />
+                    <NumberInput
+                        withAsterisk
+                        size="lg"
+                        label="Ticket Price"
+                        suffix=" APE"
+                        description="Amount a player must contribute to the prize pool to participate in a tournament"
+                        min={10}
+                        value={ticketPrice}
+                        onChange={parseIfNeeded(setTicketPrice)}
+                    />
+                    <NumberInput
+                        withAsterisk
+                        size="lg"
+                        label="Play Time"
+                        suffix=" minutes"
+                        min={10} // 10 minutes
+                        max={60 * 24 * 2} // 2 days
+                        value={playTime} // 1 hour
+                        onChange={parseIfNeeded(setPlayTime)}
+                        description="Amount of time players will have to play the game"
+                    />
+                    <NumberInput
+                        withAsterisk
+                        size="lg"
+                        label="Submission Time"
+                        suffix=" minutes"
+                        min={10} // 10 minutes
+                        max={60 * 3} // 3 hours
+                        value={submissionTime}
+                        onChange={parseIfNeeded(setSubmissionTime)}
+                        description="Amount of time players will have to submit their gameplay"
+                    />
+                    <DifficultyLevel
+                        onChange={setDifficulty}
+                        value={difficulty}
+                    />
+                    <GameLevel onChange={setLevel} />
+                    {debug && (
+                        <JsonInput
+                            label="Debug"
+                            description="Payload sent with the ERC-20 deposit as execLayerData"
+                            value={JSON.stringify(payload, undefined, 2)}
+                            autosize
+                        />
+                    )}
+                    <Group justify="center" mt="md">
+                        <ApproveButton
+                            allowance={allowance}
+                            buttonProps={{ size: "lg" }}
+                            depositAmount={
+                                isNaN(initialPool)
+                                    ? 0n
+                                    : BigInt(initialPool) * 10n ** 18n
+                            }
+                            token={token}
+                        />
+                        <Button
                             size="lg"
-                            label="Name"
-                            description="Name of the tournament, for promotional reasons only"
-                        />
-                        <NumberInput
-                            withAsterisk
-                            size="lg"
-                            label="Initial Prize Pool"
-                            suffix=" APE"
-                            description="Initial amount of money in the prize pool"
-                            min={MIN_PRIZE_POOL}
-                            max={MIN_PRIZE_POOL * 100}
-                            value={MIN_PRIZE_POOL}
-                        />
-                        <NumberInput
-                            withAsterisk
-                            size="lg"
-                            label="Ticket Price"
-                            suffix=" APE"
-                            description="Amount a player must contribute to the prize pool to participate in a tournament"
-                            min={1}
-                            value={10}
-                        />
-                        <NumberInput
-                            withAsterisk
-                            size="lg"
-                            label="Play Time"
-                            suffix=" minutes"
-                            min={10} // 10 minutes
-                            max={60 * 24 * 2} // 2 days
-                            value={60} // 1 hour
-                            description="Amount of time players will have to play the game"
-                        />
-                        <NumberInput
-                            withAsterisk
-                            size="lg"
-                            label="Submission Time"
-                            suffix=" minutes"
-                            min={10} // 10 minutes
-                            max={60 * 3} // 3 hours
-                            value={60}
-                            description="Amount of time players will have to submit their gameplay"
-                        />
-                        <SegmentedControl
-                            pt={30}
-                            data={difficultyLevels.map((level) => ({
-                                value: level.value,
-                                label: (
-                                    <Stack>
-                                        <Text size="sm">{level.label}</Text>
-                                        <Image
-                                            height={171}
-                                            width={128}
-                                            src={level.image}
-                                            alt={level.label}
-                                            onMouseEnter={(event) =>
-                                                event.target
-                                            }
-                                        />
-                                    </Stack>
-                                ),
-                            }))}
-                        />
-                        <Tabs pt={30} orientation="vertical" defaultValue="1">
-                            <Tabs.List>
-                                {episodes.map((episode, index) => (
-                                    <Tabs.Tab
-                                        key={index.toString()}
-                                        value={index.toString()}
-                                        leftSection={
-                                            <Image
-                                                alt={episode.name}
-                                                width={120}
-                                                height={90}
-                                                src={episode.image}
-                                            />
-                                        }
-                                    >
-                                        <Stack gap={0}>
-                                            <Title order={4}>{`Episode ${
-                                                index + 1
-                                            }`}</Title>
-                                            <Text>{episode.name}</Text>
-                                        </Stack>
-                                    </Tabs.Tab>
-                                ))}
-                            </Tabs.List>
-
-                            {episodes.map((episode, index) => (
-                                <Tabs.Panel
-                                    key={index.toString()}
-                                    value={index.toString()}
-                                    px={10}
-                                >
-                                    <Radio.Group
-                                        name={episode.name}
-                                        label="Level"
-                                        description="Select level of episode"
-                                        withAsterisk
-                                    >
-                                        <Stack
-                                            mt={10}
-                                            gap={10}
-                                            justify="space-between"
-                                        >
-                                            {episode.levels.map(
-                                                (level, index) => (
-                                                    <Radio
-                                                        value={index.toString()}
-                                                        key={level}
-                                                        label={level}
-                                                    />
-                                                )
-                                            )}
-                                        </Stack>
-                                    </Radio.Group>
-                                </Tabs.Panel>
-                            ))}
-                        </Tabs>
-                        <Group justify="center" mt="md">
-                            <Button size="lg" type="submit">
-                                Create Game
-                            </Button>
-                        </Group>
-                    </Stack>
-                </Box>
-            </form>
+                            type="submit"
+                            disabled={!write}
+                            onClick={write}
+                        >
+                            Create Game
+                        </Button>
+                    </Group>
+                </Stack>
+            </Box>
         </Center>
     );
 };

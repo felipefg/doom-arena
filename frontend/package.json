@@ -3,8 +3,11 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev",
         "build": "next build",
+        "codegen": "wagmi generate",
+        "dev": "next dev",
+        "prebuild": "npm run codegen",
+        "predev": "npm run codegen",
         "start": "next start",
         "lint": "next lint"
     },
@@ -30,9 +33,12 @@
         "wagmi": "^1"
     },
     "devDependencies": {
+        "@cartesi/rollups": "^1.0",
+        "@sunodo/wagmi-plugin-hardhat-deploy": "^0.2",
         "@types/node": "^20",
         "@types/react": "^18",
         "@types/react-dom": "^18",
+        "@wagmi/cli": "^1",
         "eslint": "^8",
         "eslint-config-next": "^12",
         "typescript": "^5"

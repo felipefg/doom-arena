@@ -1,5 +1,5 @@
 "use client";
-import { AppShell, Button, Group } from "@mantine/core";
+import { AppShell, Group } from "@mantine/core";
 import { FC } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
