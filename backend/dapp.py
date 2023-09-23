@@ -212,10 +212,7 @@ def submit_gameplay(rollup: Rollup, data: RollupData) -> bool:
     return True
 
 
-@url_router.inspect("/active_contest")
-def get_active_contest(rollup: Rollup, data: RollupData) -> bool:
-    contest = contests.get_active_contest()
-
+def _get_report_for_contest(contest: Contest, rollup: Rollup) -> bool:
     if contest is None:
         rollup.report(_json_dump_hex({}))
         return True
@@ -224,6 +221,21 @@ def get_active_contest(rollup: Rollup, data: RollupData) -> bool:
     print(f"{output=}")
     rollup.report(_json_dump_hex(output))
     return True
+
+
+@url_router.inspect("/active_contest")
+def get_active_contest(rollup: Rollup, data: RollupData) -> bool:
+    contest = contests.get_active_contest()
+    return _get_report_for_contest(contest, rollup)
+
+
+@url_router.inspect("/contest/([0-9]+)")
+def get_contest(rollup: Rollup, data: RollupData) -> bool:
+    path = data.str_payload()
+    _, _, contest_id = path.rpartition('/')
+    contest_id = int(contest_id)
+    contest = contests.get_contest(contest_id)
+    return _get_report_for_contest(contest, rollup)
 
 
 @json_router.advance({'action': 'finalize_contest'})

@@ -271,8 +271,31 @@ describe("tests", function()
             state="finalized",
             prize_pool=tohex(bint256.tobe(127)),
             players={
-                {wallet = tohex(ALICE_WALLET), score=-12, reward=null},
-                {wallet = tohex(BOB_WALLET), score=-5, reward=null},
+                {wallet = tohex(ALICE_WALLET), score=-12, reward=tohex(bint256.tobe(0))},
+                {wallet = tohex(BOB_WALLET), score=-5, reward=tohex(bint256.tobe(127))},
+                {wallet = tohex(CARLO_WALLET), score=null, reward=null},
+            },
+        })
+    end)
+
+    it("should get first contest", function()
+        local res = inspect(machine, "/contest/1")
+        expect.equal(res.status, "accepted")
+        expect.equal(res.reports[1], {
+            contest_id=1,
+            host=tohex(HOST_WALLET),
+            name="Contest",
+            ticket_price=tohex(bint256.tobe(10)),
+            difficulty=3,
+            level=1,
+            play_time = 3600,
+            submission_time = 4800,
+            creation_timestamp=1,
+            state="finalized",
+            prize_pool=tohex(bint256.tobe(127)),
+            players={
+                {wallet = tohex(ALICE_WALLET), score=-12, reward=tohex(bint256.tobe(0))},
+                {wallet = tohex(BOB_WALLET), score=-5, reward=tohex(bint256.tobe(127))},
                 {wallet = tohex(CARLO_WALLET), score=null, reward=null},
             },
         })
