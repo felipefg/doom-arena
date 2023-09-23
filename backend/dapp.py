@@ -11,9 +11,11 @@ from doom_arena.models import (
     CreateContestInput,
     JoinContestInput,
     EndContestInput,
+    SubmitGameplayInput,
 )
 
 from doom_arena.contest_db import contests
+from doom_arena import doom
 
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -55,9 +57,9 @@ def _decode_erc20_payload(payload):
     if payload.startswith('0x'):
         payload = payload[2:]
 
-    success = int(payload[0:2])
-    erc20_contract = payload[2:42]
-    depositor = payload[42:82]
+    success = int('0x' + payload[0:2], 0)
+    erc20_contract = '0x' + payload[2:42]
+    depositor = '0x' + payload[42:82]
     value = payload[82:146]
     value_int = int("0x" + value, 0)
     other = payload[146:]
@@ -106,9 +108,9 @@ def handle_join_contest(rollup, data, payload, erc20_contract, depositor, value)
         return False
 
     # Player must be unique
-    for player in contest.players:
-        if player.wallet.lower() == depositor.lower():
-            return False
+    existing_player = contests.get_player(payload.contest_id, depositor)
+    if existing_player is not None:
+        return False
 
     new_player = Player(
         wallet=depositor,
@@ -149,6 +151,31 @@ def end_contest(rollup: Rollup, data: RollupData) -> bool:
         return False
 
     contest.state == 'gameplay_submission'
+    return True
+
+
+@json_router.advance({'action': 'submit_contest'})
+def submit_gameplay(rollup: Rollup, data: RollupData) -> bool:
+    payload = SubmitGameplayInput.parse_obj(data.json_payload())
+    print(f'{payload=}')
+    player = contests.get_player(payload.contest_id, data.metadata.msg_sender)
+    print(f'{player=}')
+    if player is None:
+        print(f'{contests.contests=}')
+        return False
+
+    gameplay_filename = doom.save_gameplay_file(
+        raw_data=payload.gameplay,
+        contest_id=payload.contest_id,
+        player=player.wallet,
+    )
+
+    player.gameplay_filename = gameplay_filename
+
+    score = doom.generate_score(gameplay_filename)
+
+    player.score = score
+
     return True
 
 

@@ -34,6 +34,17 @@ class ContestDatabase:
     def get_latest_contest(self) -> Contest | None:
         return self.contests.get(self.latest_id)
 
+    def get_player(self, contest_id: int, player_wallet: str):
+        contest = self.contests.get(contest_id)
+        if contest is None:
+            return None
+
+        player_wallet = player_wallet.lower()
+        for player in contest.players:
+            if player.wallet.lower() == player_wallet:
+                return player
+        return None
+
 contests = ContestDatabase() # noqa
 
 

@@ -3,8 +3,9 @@ from pydantic import BaseModel
 
 class Player(BaseModel):
     wallet: str
-    score: int = None
     gameplay_hash: str
+    score: int = None
+    gameplay_filename: str = None
 
 
 class Contest(BaseModel):
@@ -42,3 +43,9 @@ class JoinContestInput(BaseModel):
 class EndContestInput(BaseModel):
     action: str = 'end_contest'
     contest_id: int
+
+
+class SubmitGameplayInput(BaseModel):
+    action: str = 'submit_contest'
+    contest_id: int
+    gameplay: str
