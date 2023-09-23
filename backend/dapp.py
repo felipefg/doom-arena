@@ -1,5 +1,6 @@
 import logging
 import json
+from math import floor
 
 from pydantic import BaseSettings
 
@@ -127,18 +128,37 @@ def handle_join_contest(rollup, data, payload, erc20_contract, depositor, value)
     return True
 
 
+def _int_to_hex(value):
+    if value is None:
+        return None
+    return f'0x{value:064x}'
+
+
 def _format_contest_output(contest: Contest) -> dict:
-    # TODO: sort by score, if available
-    players = [
-        {
+
+    players = []
+
+    for player in contest.players:
+        player_descr = {
             "wallet": player.wallet,
+            "score": player.score,
+            "reward": _int_to_hex(player.reward),
         }
-        for player in contest.players
-    ]
+        players.append(player_descr)
+
     return {
         "contest_id": contest.contest_id,
+        "name": contest.name,
+        "host": contest.host_wallet,
+        "ticket_price": contest.ticket_price,
+        "level": contest.level,
+        "difficulty": contest.difficulty,
+        "play_time": contest.play_time,
+        "submission_time": contest.submission_time,
+        "creation_timestamp": contest.creation_timestamp,
+        "state": contest.state,
         "players": players,
-        "prize_pool": contest.prize_pool,
+        "prize_pool": _int_to_hex(contest.prize_pool),
     }
 
 
@@ -194,9 +214,12 @@ def submit_gameplay(rollup: Rollup, data: RollupData) -> bool:
 
 @url_router.inspect("/active_contest")
 def get_active_contest(rollup: Rollup, data: RollupData) -> bool:
-
-    print(contests.contests)
     contest = contests.get_active_contest()
+
+    if contest is None:
+        rollup.report(_json_dump_hex({}))
+        return True
+
     output = _format_contest_output(contest)
     print(f"{output=}")
     rollup.report(_json_dump_hex(output))
