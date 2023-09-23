@@ -5,7 +5,7 @@ from pydantic import BaseSettings
 
 from cartesi import DApp, Rollup, RollupData, JSONRouter, URLRouter
 from cartesi.models import _hex2str
-from doom_arena.models import Contest, CreateContestInput
+from doom_arena.models import Contest, Player, CreateContestInput, JoinContestInput
 from doom_arena.contest_db import contests
 
 LOGGER = logging.getLogger(__name__)
@@ -65,6 +65,8 @@ def handle_erc20_deposit(rollup: Rollup, data: RollupData) -> bool:
 
     if payload.get('action') == 'create_contest':
         return handle_create_contest(rollup, data, payload, erc20_contract, depositor, value_int)
+    if payload.get('action') == 'join_contest':
+        return handle_join_contest(rollup, data, payload, erc20_contract, depositor, value_int)
 
 
 def handle_create_contest(rollup, data, payload, erc20_contract, depositor, value):
@@ -77,6 +79,36 @@ def handle_create_contest(rollup, data, payload, erc20_contract, depositor, valu
     )
     print(contests.contests)
     LOGGER.debug("Created contest '%s'", repr(contest))
+    return True
+
+
+def handle_join_contest(rollup, data, payload, erc20_contract, depositor, value):
+    payload = JoinContestInput.parse_obj(payload)
+    contest = contests.contests.get(payload.contest_id)
+
+    # Contest must exist
+    if contest is None:
+        return False
+
+    # Contest must be in the right state
+    if contest.state != 'ready_to_play':
+        return False
+
+    # Value must be enough to join
+    if value < contest.ticket_price:
+        return False
+
+    # Player must be unique
+    for player in contest.players:
+        if player.wallet.lower() == depositor.lower():
+            return False
+
+    new_player = Player(
+        wallet=depositor,
+        gameplay_hash=payload.gameplay_hash
+    )
+
+    contest.players.append(new_player)
     return True
 
 
@@ -104,7 +136,6 @@ def get_active_contest(rollup: Rollup, data: RollupData) -> bool:
     print(f"{output=}")
     rollup.report(_json_dump_hex(output))
     return True
-
 
 
 if __name__ == '__main__':

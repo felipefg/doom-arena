@@ -4,6 +4,7 @@ from pydantic import BaseModel
 class Player(BaseModel):
     wallet: str
     score: int = None
+    gameplay_hash: str
 
 
 class Contest(BaseModel):
@@ -17,6 +18,7 @@ class Contest(BaseModel):
     submission_time: int = 3600
     creation_timestamp: int = int
     prize_pool: int = 0
+    state: str = 'ready_to_play'
 
     players: list[Player] = []
 
@@ -29,3 +31,9 @@ class CreateContestInput(BaseModel):
     difficulty: int
     play_time: int
     submission_time: int
+
+
+class JoinContestInput(BaseModel):
+    action: str = "join_contest"
+    contest_id: int
+    gameplay_hash: str
