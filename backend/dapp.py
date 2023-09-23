@@ -184,6 +184,10 @@ def end_contest(rollup: Rollup, data: RollupData) -> bool:
 def submit_gameplay(rollup: Rollup, data: RollupData) -> bool:
     payload = SubmitGameplayInput.parse_obj(data.json_payload())
     contest = contests.get_contest(payload.contest_id)
+
+    if contest.state != "gameplay_submission":
+        return False
+
     player = contests.get_player(payload.contest_id, data.metadata.msg_sender)
 
     if player is None:
