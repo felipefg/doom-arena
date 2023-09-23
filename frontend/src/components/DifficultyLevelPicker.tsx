@@ -8,21 +8,25 @@ export const difficultyLevels = [
     { label: "Nightmare", image: "/img/difficulty4.png" },
 ];
 
-export type DifficultyLevelProps = {
+export type DifficultyLevelPickerProps = {
+    onChange(value: number): void;
     value: number;
 };
 
-export const DifficultyLevel: FC<DifficultyLevelProps> = ({ value }) => {
+export const DifficultyLevelPicker: FC<DifficultyLevelPickerProps> = ({
+    onChange,
+    value,
+}) => {
     return (
         <SegmentedControl
             pt={30}
+            onChange={(value) => onChange(parseInt(value))}
             value={value.toString()}
             data={difficultyLevels.map((level, index) => ({
                 value: index.toString(),
                 label: (
                     <Stack>
                         <Text size="sm">{level.label}</Text>
-                        {index != value && <Overlay backgroundOpacity={0.8} />}
                         <Image
                             height={171}
                             width={128}

@@ -22,7 +22,7 @@ import {
     useErc20PortalDepositErc20Tokens,
     usePrepareErc20PortalDepositErc20Tokens,
 } from "../../hooks/contracts";
-import { DifficultyLevel } from "../../components/DifficultyLevel";
+import { DifficultyLevelPicker } from "../../components/DifficultyLevelPicker";
 import { GameLevel } from "../../components/GameLevel";
 
 const parseIfNeeded = (setter: (v: number) => void) => {
@@ -159,7 +159,7 @@ const CreateGame: FC = () => {
                         onChange={parseIfNeeded(setSubmissionTime)}
                         description="Amount of time players will have to submit their gameplay"
                     />
-                    <DifficultyLevel
+                    <DifficultyLevelPicker
                         onChange={setDifficulty}
                         value={difficulty}
                     />
