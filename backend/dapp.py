@@ -93,7 +93,7 @@ def handle_create_contest(rollup, data, payload, erc20_contract, depositor, valu
 
 def handle_join_contest(rollup, data, payload, erc20_contract, depositor, value):
     payload = JoinContestInput.parse_obj(payload)
-    contest = contests.contests.get(payload.contest_id)
+    contest = contests.get_contest(payload.contest_id)
 
     # Contest must exist
     if contest is None:
@@ -148,7 +148,7 @@ def end_contest(rollup: Rollup, data: RollupData) -> bool:
     Move contest from "ready_to_play" to "gameplay_submission" state.
     """
     payload = EndContestInput.parse_obj(data.json_payload())
-    contest = contests.contests.get(payload.contest_id)
+    contest = contests.get_contest(payload.contest_id)
 
     if contest is None:
         return False
@@ -163,7 +163,7 @@ def end_contest(rollup: Rollup, data: RollupData) -> bool:
 @json_router.advance({'action': 'submit_contest'})
 def submit_gameplay(rollup: Rollup, data: RollupData) -> bool:
     payload = SubmitGameplayInput.parse_obj(data.json_payload())
-    contest = contests.contests.get(payload.contest_id)
+    contest = contests.get_contest(payload.contest_id)
     player = contests.get_player(payload.contest_id, data.metadata.msg_sender)
 
     if player is None:
@@ -196,7 +196,7 @@ def submit_gameplay(rollup: Rollup, data: RollupData) -> bool:
 def get_active_contest(rollup: Rollup, data: RollupData) -> bool:
 
     print(contests.contests)
-    contest = contests.get_latest_contest()
+    contest = contests.get_active_contest()
     output = _format_contest_output(contest)
     print(f"{output=}")
     rollup.report(_json_dump_hex(output))
@@ -207,7 +207,7 @@ def get_active_contest(rollup: Rollup, data: RollupData) -> bool:
 def finalize_contest(rollup: Rollup, data: RollupData) -> bool:
 
     payload = EndContestInput.parse_obj(data.json_payload())
-    contest = contests.contests.get(payload.contest_id)
+    contest = contests.get_contest(payload.contest_id)
 
     if contest is None:
         return False
@@ -215,7 +215,7 @@ def finalize_contest(rollup: Rollup, data: RollupData) -> bool:
     if contest.state != "gameplay_submission":
         return False
 
-    contest.state = 'finalized'
+    contests.finalize_contest(payload.contest_id)
     return True
 
 

@@ -8,6 +8,7 @@ class ContestDatabase:
     def __init__(self):
         self.contests: dict[int, Contest] = {}
         self.latest_id: int = 0
+        self.active_id: int = 0
 
     def create_contest(self, input: CreateContestInput, timestamp: int,
                        host_wallet: str, initial_prize_pool: int) -> Contest:
@@ -29,10 +30,11 @@ class ContestDatabase:
         self.contests[new_id] = contest
         self.latest_id = new_id
 
-        return contest
+        current_contest = self.contests.get(self.active_id)
+        if (current_contest is None) or (current_contest.state == "finalized"):
+            self.active_id = new_id
 
-    def get_latest_contest(self) -> Contest | None:
-        return self.contests.get(self.latest_id)
+        return contest
 
     def get_player(self, contest_id: int, player_wallet: str):
         contest = self.contests.get(contest_id)
@@ -44,6 +46,19 @@ class ContestDatabase:
             if player.wallet.lower() == player_wallet:
                 return player
         return None
+
+    def get_active_contest(self) -> Contest | None:
+        return self.contests.get(self.active_id)
+
+    def get_contest(self, contest_id: id) -> Contest | None:
+        return self.contests.get(contest_id)
+
+    def finalize_contest(self, contest_id):
+        contest = self.get_contest(contest_id)
+        contest.state = "finalized"
+
+        if self.latest_id > self.active_id:
+            self.active_id += 1
 
 contests = ContestDatabase() # noqa
 
