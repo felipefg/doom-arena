@@ -58,14 +58,14 @@ local function deposit_advance(machine, sender, amount, data)
             amount = bint256.tobe(amount),
             extra_data = json_encode(data)
         },
-    }))
+    }, true))
 end
 
 local function advance(machine, sender, data)
     return decode_response_jsons(machine:advance_state({
         metadata = {msg_sender = sender},
         payload = json_encode(data)
-    }))
+    }, true))
 end
 
 local function inspect(machine, path)
@@ -96,20 +96,19 @@ describe("tests", function()
     end)
 
 --[[
-    it("should reject contest creation while a contest is going on", function()
+    it("should accept contest creation while a contest is going on", function()
         local res = deposit_advance(machine, HOST_WALLET, 100, {
             action="create_contest",
             name="Contest",
-            ticket_price=10,
-            difficulty=3,
-            level=1,
-            play_time = 3600,
-            submission_time = 3600,
+            ticket_price=tohex(bint256.tobe(10)),
+            difficulty=2,
+            level=3,
+            play_time = 1200,
+            submission_time = 2400,
         })
-        expect.equal(res.status, "rejected")
+        expect.equal(res.status, "accepted")
     end)
 ]]
-
     it("should get active contest", function()
         local res = inspect(machine, "/active_contest")
         expect.equal(res.status, "accepted")
@@ -129,7 +128,16 @@ describe("tests", function()
         })
     end)
 
-    it("alice should join a contest 1", function()
+    it("alice should not join a contest without paying ticket price", function()
+        local res = deposit_advance(machine, ALICE_WALLET, 9, {
+            action="join_contest",
+            contest_id=1,
+            gameplay_hash="0539eb40ecaa599f4cec6e2b398b3ed3552990f0387b295c64d0f10da9c3bfbb",
+        })
+        expect.equal(res.status, "rejected")
+    end)
+
+    it("alice should join a contest", function()
         local res = deposit_advance(machine, ALICE_WALLET, 10, {
             action="join_contest",
             contest_id=1,
@@ -138,7 +146,7 @@ describe("tests", function()
         expect.equal(res, expected_ok_res)
     end)
 
-    it("bob should join a contest 2", function()
+    it("bob should join a contest", function()
         local res = deposit_advance(machine, BOB_WALLET, 10, {
             action="join_contest",
             contest_id=1,
@@ -147,7 +155,25 @@ describe("tests", function()
         expect.equal(res, expected_ok_res)
     end)
 
-    it("should get active contest 2", function()
+    it("bob cannot submit a gameplay before the submission time", function()
+        local res = advance(machine, BOB_WALLET, {
+            action="submit_contest",
+            contest_id=1,
+            gameplay=tohex(read_file("bob.rivlog")),
+        })
+        expect.equal(res.status, "rejected")
+    end)
+
+    it("bob should not join a contest twice", function()
+        local res = deposit_advance(machine, BOB_WALLET, 9, {
+            action="join_contest",
+            contest_id=1,
+            gameplay_hash="b646dc09a63ca6dc78c72a7dd67b2e0f99fb05eb7f32e4b4f955f2e4bd08e33a"
+        })
+        expect.equal(res.status, "rejected")
+    end)
+
+    it("should get active contest", function()
         local res = inspect(machine, "/active_contest")
         expect.equal(res.status, "accepted")
         expect.equal(res.reports[1], {
@@ -169,8 +195,8 @@ describe("tests", function()
         })
     end)
 
-    it("carlo should join a contest 3", function()
-        local res = deposit_advance(machine, CARLO_WALLET, 10, {
+    it("carlo should join a contest paying more than tickt price", function()
+        local res = deposit_advance(machine, CARLO_WALLET, 20, {
             action="join_contest",
             contest_id=1,
             gameplay_hash="b646dc09a63ca6dc78c72a7dd67b2e0f99fb05eb7f32e4b4f955f2e4bd08e33a"
@@ -192,7 +218,7 @@ describe("tests", function()
             submission_time = 4800,
             creation_timestamp=1,
             state="ready_to_play",
-            prize_pool=tohex(bint256.tobe(127)),
+            prize_pool=tohex(bint256.tobe(136)),
             players={
                 {wallet = tohex(ALICE_WALLET), score=null, reward=null},
                 {wallet = tohex(BOB_WALLET), score=null, reward=null},
@@ -241,7 +267,7 @@ describe("tests", function()
             submission_time = 4800,
             creation_timestamp=1,
             state="gameplay_submission",
-            prize_pool=tohex(bint256.tobe(127)),
+            prize_pool=tohex(bint256.tobe(136)),
             players={
                 {wallet = tohex(ALICE_WALLET), score=-12, reward=null},
                 {wallet = tohex(BOB_WALLET), score=-5, reward=null},
@@ -272,10 +298,10 @@ describe("tests", function()
             submission_time = 4800,
             creation_timestamp=1,
             state="finalized",
-            prize_pool=tohex(bint256.tobe(127)),
+            prize_pool=tohex(bint256.tobe(136)),
             players={
                 {wallet = tohex(ALICE_WALLET), score=-12, reward=tohex(bint256.tobe(0))},
-                {wallet = tohex(BOB_WALLET), score=-5, reward=tohex(bint256.tobe(127))},
+                {wallet = tohex(BOB_WALLET), score=-5, reward=tohex(bint256.tobe(136))},
                 {wallet = tohex(CARLO_WALLET), score=null, reward=null},
             },
         })
@@ -295,10 +321,10 @@ describe("tests", function()
             submission_time = 4800,
             creation_timestamp=1,
             state="finalized",
-            prize_pool=tohex(bint256.tobe(127)),
+            prize_pool=tohex(bint256.tobe(136)),
             players={
                 {wallet = tohex(ALICE_WALLET), score=-12, reward=tohex(bint256.tobe(0))},
-                {wallet = tohex(BOB_WALLET), score=-5, reward=tohex(bint256.tobe(127))},
+                {wallet = tohex(BOB_WALLET), score=-5, reward=tohex(bint256.tobe(136))},
                 {wallet = tohex(CARLO_WALLET), score=null, reward=null},
             },
         })
