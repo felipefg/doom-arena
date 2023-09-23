@@ -3,6 +3,8 @@ Handle Doom related gameplays
 """
 from pathlib import Path
 
+from .models import Contest
+
 
 def _decode_gameplay(data: str) -> bytes:
     """
@@ -28,7 +30,7 @@ def save_gameplay_file(raw_data: str, contest_id: int, player: str) -> str:
     return str(filename)
 
 
-def generate_score(filename) -> int:
+def generate_score(filename: str, contest: Contest) -> int:
     """
     Runs the game with the given gameplay filename and return the resulting
     score.

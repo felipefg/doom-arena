@@ -157,9 +157,9 @@ def end_contest(rollup: Rollup, data: RollupData) -> bool:
 @json_router.advance({'action': 'submit_contest'})
 def submit_gameplay(rollup: Rollup, data: RollupData) -> bool:
     payload = SubmitGameplayInput.parse_obj(data.json_payload())
-    print(f'{payload=}')
+    contest = contests.contests.get(payload.contest_id)
     player = contests.get_player(payload.contest_id, data.metadata.msg_sender)
-    print(f'{player=}')
+
     if player is None:
         print(f'{contests.contests=}')
         return False
@@ -172,7 +172,7 @@ def submit_gameplay(rollup: Rollup, data: RollupData) -> bool:
 
     player.gameplay_filename = gameplay_filename
 
-    score = doom.generate_score(gameplay_filename)
+    score = doom.generate_score(gameplay_filename, contest)
 
     player.score = score
 
