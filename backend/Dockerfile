@@ -1,7 +1,8 @@
 # syntax=docker.io/docker/dockerfile:1.4
+FROM --platform=linux/riscv64 riv/toolchain:devel AS riv-toolchain
 FROM --platform=linux/riscv64 cartesi/python:3.10-slim-jammy
 
-LABEL io.sunodo.sdk_version=0.2.0
+LABEL io.sunodo.sdk_version=0.2.0-riv
 LABEL io.cartesi.rollups.ram_size=128Mi
 
 ARG MACHINE_EMULATOR_TOOLS_VERSION=0.12.0
@@ -14,6 +15,23 @@ rm -rf /var/lib/apt/lists/*
 EOF
 
 ENV PATH="/opt/cartesi/bin:${PATH}"
+
+# install riv rootfs
+COPY --from=riv-toolchain /rootfs /rivos
+RUN cp /rivos/etc/sysctl.conf /etc/sysctl.conf
+RUN mkdir -p /rivos/cartridges
+COPY doom.sqfs /rivos/cartridges/doom.sqfs
+
+# install custom init
+COPY --from=riv-toolchain /rootfs/sbin/init /opt/cartesi/bin/init
+
+# install musl libc
+RUN ln -s /rivos/lib/ld-musl-riscv64.so.1 /lib/
+
+# install riv-chroot
+RUN ln -s /rivos/usr/bin/bwrap /usr/bin/ && \
+    ln -s /rivos/usr/lib/libcap.so.2 /usr/lib/ && \
+    ln -s /rivos/sbin/riv-chroot /sbin/
 
 WORKDIR /opt/cartesi/dapp
 COPY ./requirements.txt .

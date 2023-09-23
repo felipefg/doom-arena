@@ -18,6 +18,9 @@ const Home: FC = () => {
                 <Link href="/create">
                     <Button>Create Game</Button>
                 </Link>
+                <Link href="/play">
+                    <Button>Play Game</Button>
+                </Link>
             </Stack>
         </Center>
     );
