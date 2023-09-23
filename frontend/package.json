@@ -28,6 +28,7 @@
         "react-dom": "^18",
         "react-icons": "^4",
         "react-jazzicon": "^1",
+        "react-use-downloader": "^1.2.4",
         "urql": "^4",
         "viem": "^1",
         "wagmi": "^1"
