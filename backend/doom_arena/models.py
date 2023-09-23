@@ -19,6 +19,7 @@ class Contest(BaseModel):
     submission_time: int = 3600
     creation_timestamp: int = int
     prize_pool: int = 0
+    host_reward: int = 0
     state: str = 'ready_to_play'
 
     players: list[Player] = []
