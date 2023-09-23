@@ -7,7 +7,7 @@ import Image from "next/image";
 
 export const Shell: FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
-        <AppShell header={{ height: 80 }} padding="md">
+        <AppShell header={{ height: 80 }}>
             <AppShell.Header>
                 <Group h="100%" px={20}>
                     <Link href="/">

@@ -1,9 +1,11 @@
 "use client";
 
 import {
+    Box,
     Button,
     Center,
     Group,
+    Image,
     NumberInput,
     Radio,
     SegmentedControl,
@@ -12,8 +14,8 @@ import {
     Text,
     TextInput,
     Title,
+    useMantineTheme,
 } from "@mantine/core";
-import Image from "next/image";
 import { FC } from "react";
 
 const MIN_PRIZE_POOL = 100;
@@ -78,139 +80,148 @@ const episodes = [
 ];
 
 const CreateGame: FC = () => {
+    const theme = useMantineTheme();
+
     return (
-        <Center>
+        <Center
+            style={{
+                backgroundImage: 'url("/img/banner.jpg")',
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center",
+                backgroundAttachment: "fixed",
+            }}
+        >
             <form>
-                <Stack w={600}>
-                    <Image
-                        src="/img/banner.jpg"
-                        width={600}
-                        height={204}
-                        alt="banner"
-                    />
-                    <TextInput
-                        withAsterisk
-                        size="lg"
-                        label="Name"
-                        description="Name of the tournament, for promotional reasons only"
-                    />
-                    <NumberInput
-                        withAsterisk
-                        size="lg"
-                        label="Initial Prize Pool"
-                        suffix=" APE"
-                        description="Initial amount of money in the prize pool"
-                        min={MIN_PRIZE_POOL}
-                        max={MIN_PRIZE_POOL * 100}
-                        value={MIN_PRIZE_POOL}
-                    />
-                    <NumberInput
-                        withAsterisk
-                        size="lg"
-                        label="Ticket Price"
-                        suffix=" APE"
-                        description="Amount a player must contribute to the prize pool to participate in a tournament"
-                        min={1}
-                        value={10}
-                    />
-                    <NumberInput
-                        withAsterisk
-                        size="lg"
-                        label="Play Time"
-                        suffix=" minutes"
-                        min={10} // 10 minutes
-                        max={60 * 24 * 2} // 2 days
-                        value={60} // 1 hour
-                        description="Amount of time players will have to play the game"
-                    />
-                    <NumberInput
-                        withAsterisk
-                        size="lg"
-                        label="Submission Time"
-                        suffix=" minutes"
-                        min={10} // 10 minutes
-                        max={60 * 3} // 3 hours
-                        value={60}
-                        description="Amount of time players will have to submit their gameplay"
-                    />
-                    <SegmentedControl
-                        pt={30}
-                        data={difficultyLevels.map((level) => ({
-                            value: level.value,
-                            label: (
-                                <Stack>
-                                    <Text size="sm">{level.label}</Text>
-                                    <Image
-                                        height={171}
-                                        width={128}
-                                        src={level.image}
-                                        alt={level.label}
-                                        onMouseEnter={(event) => event.target}
-                                    />
-                                </Stack>
-                            ),
-                        }))}
-                    />
-                    <Tabs pt={30} orientation="vertical" defaultValue="1">
-                        <Tabs.List>
+                <Box p={20} mt={180} bg={theme.colors.dark[7]}>
+                    <Stack w={600}>
+                        <TextInput
+                            withAsterisk
+                            size="lg"
+                            label="Name"
+                            description="Name of the tournament, for promotional reasons only"
+                        />
+                        <NumberInput
+                            withAsterisk
+                            size="lg"
+                            label="Initial Prize Pool"
+                            suffix=" APE"
+                            description="Initial amount of money in the prize pool"
+                            min={MIN_PRIZE_POOL}
+                            max={MIN_PRIZE_POOL * 100}
+                            value={MIN_PRIZE_POOL}
+                        />
+                        <NumberInput
+                            withAsterisk
+                            size="lg"
+                            label="Ticket Price"
+                            suffix=" APE"
+                            description="Amount a player must contribute to the prize pool to participate in a tournament"
+                            min={1}
+                            value={10}
+                        />
+                        <NumberInput
+                            withAsterisk
+                            size="lg"
+                            label="Play Time"
+                            suffix=" minutes"
+                            min={10} // 10 minutes
+                            max={60 * 24 * 2} // 2 days
+                            value={60} // 1 hour
+                            description="Amount of time players will have to play the game"
+                        />
+                        <NumberInput
+                            withAsterisk
+                            size="lg"
+                            label="Submission Time"
+                            suffix=" minutes"
+                            min={10} // 10 minutes
+                            max={60 * 3} // 3 hours
+                            value={60}
+                            description="Amount of time players will have to submit their gameplay"
+                        />
+                        <SegmentedControl
+                            pt={30}
+                            data={difficultyLevels.map((level) => ({
+                                value: level.value,
+                                label: (
+                                    <Stack>
+                                        <Text size="sm">{level.label}</Text>
+                                        <Image
+                                            height={171}
+                                            width={128}
+                                            src={level.image}
+                                            alt={level.label}
+                                            onMouseEnter={(event) =>
+                                                event.target
+                                            }
+                                        />
+                                    </Stack>
+                                ),
+                            }))}
+                        />
+                        <Tabs pt={30} orientation="vertical" defaultValue="1">
+                            <Tabs.List>
+                                {episodes.map((episode, index) => (
+                                    <Tabs.Tab
+                                        key={index.toString()}
+                                        value={index.toString()}
+                                        leftSection={
+                                            <Image
+                                                alt={episode.name}
+                                                width={120}
+                                                height={90}
+                                                src={episode.image}
+                                            />
+                                        }
+                                    >
+                                        <Stack gap={0}>
+                                            <Title order={4}>{`Episode ${
+                                                index + 1
+                                            }`}</Title>
+                                            <Text>{episode.name}</Text>
+                                        </Stack>
+                                    </Tabs.Tab>
+                                ))}
+                            </Tabs.List>
+
                             {episodes.map((episode, index) => (
-                                <Tabs.Tab
+                                <Tabs.Panel
                                     key={index.toString()}
                                     value={index.toString()}
-                                    leftSection={
-                                        <Image
-                                            alt={episode.name}
-                                            width={120}
-                                            height={90}
-                                            src={episode.image}
-                                        />
-                                    }
+                                    px={10}
                                 >
-                                    <Stack gap={0}>
-                                        <Title order={4}>{`Episode ${
-                                            index + 1
-                                        }`}</Title>
-                                        <Text>{episode.name}</Text>
-                                    </Stack>
-                                </Tabs.Tab>
-                            ))}
-                        </Tabs.List>
-
-                        {episodes.map((episode, index) => (
-                            <Tabs.Panel
-                                key={index.toString()}
-                                value={index.toString()}
-                                px={10}
-                            >
-                                <Radio.Group
-                                    name={episode.name}
-                                    label="Level"
-                                    description="Select level of episode"
-                                    withAsterisk
-                                >
-                                    <Stack
-                                        mt={10}
-                                        gap={10}
-                                        justify="space-between"
+                                    <Radio.Group
+                                        name={episode.name}
+                                        label="Level"
+                                        description="Select level of episode"
+                                        withAsterisk
                                     >
-                                        {episode.levels.map((level, index) => (
-                                            <Radio
-                                                value={index.toString()}
-                                                key={level}
-                                                label={level}
-                                            />
-                                        ))}
-                                    </Stack>
-                                </Radio.Group>
-                            </Tabs.Panel>
-                        ))}
-                    </Tabs>
-                    <Group justify="center" mt="md">
-                        <Button size="lg" type="submit">
-                            Create Game
-                        </Button>
-                    </Group>
-                </Stack>
+                                        <Stack
+                                            mt={10}
+                                            gap={10}
+                                            justify="space-between"
+                                        >
+                                            {episode.levels.map(
+                                                (level, index) => (
+                                                    <Radio
+                                                        value={index.toString()}
+                                                        key={level}
+                                                        label={level}
+                                                    />
+                                                )
+                                            )}
+                                        </Stack>
+                                    </Radio.Group>
+                                </Tabs.Panel>
+                            ))}
+                        </Tabs>
+                        <Group justify="center" mt="md">
+                            <Button size="lg" type="submit">
+                                Create Game
+                            </Button>
+                        </Group>
+                    </Stack>
+                </Box>
             </form>
         </Center>
     );
