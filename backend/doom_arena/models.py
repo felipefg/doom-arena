@@ -49,3 +49,8 @@ class SubmitGameplayInput(BaseModel):
     action: str = 'submit_contest'
     contest_id: int
     gameplay: str
+
+
+class FinalizeContestInput(BaseModel):
+    action: str = 'finalize_contest'
+    contest_id: int

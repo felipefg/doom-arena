@@ -150,7 +150,7 @@ def end_contest(rollup: Rollup, data: RollupData) -> bool:
     if contest.state != "ready_to_play":
         return False
 
-    contest.state == 'gameplay_submission'
+    contest.state = 'gameplay_submission'
     return True
 
 
@@ -187,6 +187,22 @@ def get_active_contest(rollup: Rollup, data: RollupData) -> bool:
     output = _format_contest_output(contest)
     print(f"{output=}")
     rollup.report(_json_dump_hex(output))
+    return True
+
+
+@json_router.advance({'action': 'finalize_contest'})
+def finalize_contest(rollup: Rollup, data: RollupData) -> bool:
+
+    payload = EndContestInput.parse_obj(data.json_payload())
+    contest = contests.contests.get(payload.contest_id)
+
+    if contest is None:
+        return False
+
+    if contest.state != "gameplay_submission":
+        return False
+
+    contest.state = 'finalized'
     return True
 
 
