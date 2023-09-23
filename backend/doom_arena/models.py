@@ -37,3 +37,8 @@ class JoinContestInput(BaseModel):
     action: str = "join_contest"
     contest_id: int
     gameplay_hash: str
+
+
+class EndContestInput(BaseModel):
+    action: str = 'end_contest'
+    contest_id: int

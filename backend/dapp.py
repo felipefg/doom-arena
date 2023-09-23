@@ -5,7 +5,14 @@ from pydantic import BaseSettings
 
 from cartesi import DApp, Rollup, RollupData, JSONRouter, URLRouter
 from cartesi.models import _hex2str
-from doom_arena.models import Contest, Player, CreateContestInput, JoinContestInput
+from doom_arena.models import (
+    Contest,
+    Player,
+    CreateContestInput,
+    JoinContestInput,
+    EndContestInput,
+)
+
 from doom_arena.contest_db import contests
 
 LOGGER = logging.getLogger(__name__)
@@ -125,6 +132,24 @@ def _format_contest_output(contest: Contest) -> dict:
         "players": players,
         "prize_pool": contest.prize_pool,
     }
+
+
+@json_router.advance({'action': 'end_contest'})
+def end_contest(rollup: Rollup, data: RollupData) -> bool:
+    """
+    Move contest from "ready_to_play" to "gameplay_submission" state.
+    """
+    payload = EndContestInput.parse_obj(data.json_payload())
+    contest = contests.contests.get(payload.contest_id)
+
+    if contest is None:
+        return False
+
+    if contest.state != "ready_to_play":
+        return False
+
+    contest.state == 'gameplay_submission'
+    return True
 
 
 @url_router.inspect("/active_contest")
