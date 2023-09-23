@@ -119,7 +119,7 @@ def handle_join_contest(rollup, data, payload, erc20_contract, depositor, value)
 
     contest.players.append(new_player)
 
-    prize_amount = value // 0.9
+    prize_amount = int(floor(value * 0.9))
     host_amount = value - prize_amount
     contest.prize_pool += prize_amount
     contest.host_reward += host_amount
