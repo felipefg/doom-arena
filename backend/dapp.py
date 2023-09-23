@@ -1,7 +1,10 @@
 import logging
 import json
 
+from pydantic import BaseSettings
+
 from cartesi import DApp, Rollup, RollupData, JSONRouter, URLRouter
+from cartesi.models import _hex2str
 from doom_arena.models import Contest, CreateContestInput
 from doom_arena.contest_db import contests
 
@@ -14,38 +17,94 @@ dapp.add_router(json_router)
 dapp.add_router(url_router)
 
 
+class Settings(BaseSettings):
+    PORTAL_ERC20_ADDRESS: str = '0x9C21AEb2093C32DDbC53eEF24B873BDCd1aDa1DB'
+    TOKEN_ERC20_ADDRESS: str = '0xc6e7DF5E7b4f2A278906862b61205850344D4e7d'
+
+
+settings = Settings()
+
+
 def str2hex(str):
     """Encodes a string as a hex string"""
     return "0x" + str.encode("utf-8").hex()
 
 
-@json_router.advance({"action": "create_contest"})
-def create_contest(rollup: Rollup, data: RollupData) -> bool:
-    payload = CreateContestInput.parse_obj(data.json_payload())
+def _json_dump_hex(input):
+    out_str = json.dumps(input)
+    return str2hex(out_str)
+
+
+@dapp.advance()
+def default_handler(rollup: Rollup, data: RollupData) -> bool:
+    print("Default Handler")
+    print(f"{data.metadata.msg_sender=}")
+    print(f"{settings.PORTAL_ERC20_ADDRESS=}")
+    if data.metadata.msg_sender.lower() == settings.PORTAL_ERC20_ADDRESS.lower():
+        return handle_erc20_deposit(rollup, data)
+
+
+def _decode_erc20_payload(payload):
+    if payload.startswith('0x'):
+        payload = payload[2:]
+
+    success = int(payload[0:2])
+    erc20_contract = payload[2:42]
+    depositor = payload[42:82]
+    value = payload[82:146]
+    value_int = int("0x" + value, 0)
+    other = payload[146:]
+
+    return success, erc20_contract, depositor, value_int, "0x" + other
+
+
+def handle_erc20_deposit(rollup: Rollup, data: RollupData) -> bool:
+    success, erc20_contract, depositor, value_int, payload_hex = _decode_erc20_payload(data.payload)
+
+    payload = json.loads(_hex2str(payload_hex))
+
+    if payload.get('action') == 'create_contest':
+        return handle_create_contest(rollup, data, payload, erc20_contract, depositor, value_int)
+
+
+def handle_create_contest(rollup, data, payload, erc20_contract, depositor, value):
+    payload = CreateContestInput.parse_obj(payload)
     contest = contests.create_contest(
         input=payload,
         timestamp=data.metadata.timestamp,
-        host_wallet=data.metadata.msg_sender
+        host_wallet=depositor,
+        initial_prize_pool=value,
     )
-
+    print(contests.contests)
     LOGGER.debug("Created contest '%s'", repr(contest))
     return True
 
 
 def _format_contest_output(contest: Contest) -> dict:
+    # TODO: sort by score, if available
+    players = [
+        {
+            "wallet": player.wallet,
+        }
+        for player in contest.players
+    ]
     return {
-        "contest_id": 1,
-        "players": [],
-        "prize_pool": 100,
+        "contest_id": contest.contest_id,
+        "players": players,
+        "prize_pool": contest.prize_pool,
     }
 
 
 @url_router.inspect("/active_contest")
 def get_active_contest(rollup: Rollup, data: RollupData) -> bool:
+
+    print(contests.contests)
     contest = contests.get_latest_contest()
     output = _format_contest_output(contest)
-    rollup.report(str2hex(json.dumps(output)))
+    print(f"{output=}")
+    rollup.report(_json_dump_hex(output))
     return True
+
 
 
 if __name__ == '__main__':

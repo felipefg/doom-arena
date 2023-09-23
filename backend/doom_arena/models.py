@@ -7,7 +7,7 @@ class Player(BaseModel):
 
 
 class Contest(BaseModel):
-    contest_id: str
+    contest_id: int
     host_wallet: str
     name: str
     ticket_price: int
@@ -16,8 +16,9 @@ class Contest(BaseModel):
     play_time: int = 3600
     submission_time: int = 3600
     creation_timestamp: int = int
+    prize_pool: int = 0
 
-    players: list[Player]
+    players: list[Player] = []
 
 
 class CreateContestInput(BaseModel):

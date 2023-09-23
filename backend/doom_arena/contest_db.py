@@ -10,7 +10,7 @@ class ContestDatabase:
         self.latest_id: int = 0
 
     def create_contest(self, input: CreateContestInput, timestamp: int,
-                       host_wallet: str) -> Contest:
+                       host_wallet: str, initial_prize_pool: int) -> Contest:
         new_id = self.latest_id + 1
 
         contest = Contest(
@@ -23,6 +23,7 @@ class ContestDatabase:
             difficulty=input.difficulty,
             play_time=input.play_time,
             submission_time=input.submission_time,
+            prize_pool=initial_prize_pool,
         )
 
         self.contests[new_id] = contest
