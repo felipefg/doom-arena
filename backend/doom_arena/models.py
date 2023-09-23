@@ -15,6 +15,8 @@ class Contest(BaseModel):
     difficulty: int
     play_time: int = 3600
     submission_time: int = 3600
+    creation_timestamp: int = int
+
     players: list[Player]
 
 
@@ -26,3 +28,5 @@ class CreateContestInput(BaseModel):
     difficulty: int
     play_time: int
     submission_time: int
+
+
