@@ -150,7 +150,7 @@ def _format_contest_output(contest: Contest) -> dict:
         "contest_id": contest.contest_id,
         "name": contest.name,
         "host": contest.host_wallet,
-        "ticket_price": contest.ticket_price,
+        "ticket_price": _int_to_hex(contest.ticket_price),
         "level": contest.level,
         "difficulty": contest.difficulty,
         "play_time": contest.play_time,
