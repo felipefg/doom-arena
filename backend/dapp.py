@@ -16,7 +16,7 @@ from doom_arena.models import (
 )
 
 from doom_arena.contest_db import contests
-from doom_arena import doom
+from doom_arena import doom, prizes
 
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -238,6 +238,7 @@ def finalize_contest(rollup: Rollup, data: RollupData) -> bool:
     if contest.state != "gameplay_submission":
         return False
 
+    prizes.allocate_prizes(contest)
     contests.finalize_contest(payload.contest_id)
     return True
 
