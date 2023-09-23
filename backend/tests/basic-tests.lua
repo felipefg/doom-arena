@@ -4,8 +4,8 @@ local lester = require("luadeps.lester")
 local fromhex, tohex = encode_utils.fromhex, encode_utils.tohex
 local bint256 = require 'luadeps.bint'(256)
 local describe, it, expect = lester.describe, lester.it, lester.expect
-local json_encode = require 'luadeps.dkjson'.encode
-local json_decode = require 'luadeps.dkjson'.decode
+local json_encode = require 'cjson'.encode
+local json_decode = require 'cjson'.decode
 
 ------------------------------------------
 -- Configurations
@@ -35,8 +35,8 @@ local expected_ok_res = {
 }
 
 local function decode_response_jsons(res)
-    for i,v in pairs(res.reports) do
-        res.reports[i] = json_decode(v)
+    for i,v in ipairs(res.reports) do
+        res.reports[i] = json_decode(v.payload)
     end
     return res
 end
@@ -122,7 +122,7 @@ describe("tests", function()
         local res = deposit_advance(machine, BOB_WALLET, 10, {
             action="join_contest",
             contest_id=1,
-            gameplay_hash="0x01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+            gameplay_hash="0x01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546c"
         })
         expect.equal(res, expected_ok_res)
     end)
