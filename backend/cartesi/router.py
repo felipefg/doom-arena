@@ -58,8 +58,9 @@ class JSONRouter(Router):
         try:
             req_data = request.data.json_payload()
         except Exception:
+            print(f"Invalid JSON: {request.data=}")
             return None
-
+        print(f"Valid data: {req_data=}")
         if request.request_type == 'advance_state':
             handlers = self.advance_routes
         else:
