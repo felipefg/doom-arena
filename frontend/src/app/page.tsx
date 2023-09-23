@@ -64,7 +64,9 @@ const Home: FC = () => {
                     {formatUnits(hexToBigInt(c.ticket_price as Hex), 18)} APE to
                     signup
                 </Text>
-                <Button size="lg">Play Now</Button>
+                <Link href="/play">
+                    <Button size="lg">Play Now</Button>
+                </Link>
             </Stack>
         </Center>
     );
