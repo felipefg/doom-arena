@@ -3,6 +3,7 @@ local encode_utils = require("cartesi-testlib.encode-utils")
 local lester = require("luadeps.lester")
 local fromhex, tohex = encode_utils.fromhex, encode_utils.tohex
 local bint256 = require 'luadeps.bint'(256)
+local tobe = bint256.tobe
 local describe, it, expect = lester.describe, lester.it, lester.expect
 local null = require'cjson'.null
 local json_encode = require 'cjson'.encode
@@ -28,6 +29,10 @@ local machine_remote_protocol = "jsonrpc"
 
 ----------------------------------------
 -- Utilities
+
+local function tohexbe(x)
+    return tohex(tobe(x))
+end
 
 local expected_ok_res = {
     status = "accepted",
@@ -55,7 +60,7 @@ local function deposit_advance(machine, sender, amount, data)
         payload = encode_utils.encode_erc20_deposit{
             contract_address = config.TOKEN_ERC20_ADDRESS,
             sender_address = sender,
-            amount = bint256.tobe(amount),
+            amount = amount,
             extra_data = json_encode(data)
         },
     }, true))
@@ -78,15 +83,17 @@ end
 --------------
 -- Tests
 
+local e18 = bint256.ipow(10, 18)
+
 describe("tests", function()
     local machine <close> = cartesi_rolling_machine(machine_config, machine_runtime_config, machine_remote_protocol)
     machine:run_until_yield_or_halt()
 
     it("should create a contest", function()
-        local res = deposit_advance(machine, HOST_WALLET, 100, {
+        local res = deposit_advance(machine, HOST_WALLET, tobe(100 * e18), {
             action="create_contest",
             name="Contest",
-            ticket_price=tohex(bint256.tobe(10)),
+            ticket_price=tohexbe(10 * e18),
             difficulty=3,
             level=1,
             play_time = 3600,
@@ -100,7 +107,7 @@ describe("tests", function()
         local res = deposit_advance(machine, HOST_WALLET, 100, {
             action="create_contest",
             name="Contest",
-            ticket_price=tohex(bint256.tobe(10)),
+            ticket_price=tohexbe(10))
             difficulty=2,
             level=3,
             play_time = 1200,
@@ -116,20 +123,20 @@ describe("tests", function()
             contest_id=1,
             host=tohex(HOST_WALLET),
             name="Contest",
-            ticket_price=tohex(bint256.tobe(10)),
+            ticket_price=tohexbe(10 * e18),
             difficulty=3,
             level=1,
             play_time = 3600,
             submission_time = 4800,
             creation_timestamp=1,
             state="ready_to_play",
-            prize_pool=tohex(bint256.tobe(100)),
+            prize_pool=tohexbe(100 * e18),
             players={},
         })
     end)
 
     it("alice should not join a contest without paying ticket price", function()
-        local res = deposit_advance(machine, ALICE_WALLET, 9, {
+        local res = deposit_advance(machine, ALICE_WALLET, tobe(9 * e18), {
             action="join_contest",
             contest_id=1,
             gameplay_hash="0539eb40ecaa599f4cec6e2b398b3ed3552990f0387b295c64d0f10da9c3bfbb",
@@ -138,7 +145,7 @@ describe("tests", function()
     end)
 
     it("alice should join a contest", function()
-        local res = deposit_advance(machine, ALICE_WALLET, 10, {
+        local res = deposit_advance(machine, ALICE_WALLET, tobe(10 * e18), {
             action="join_contest",
             contest_id=1,
             gameplay_hash="0539eb40ecaa599f4cec6e2b398b3ed3552990f0387b295c64d0f10da9c3bfbb",
@@ -147,7 +154,7 @@ describe("tests", function()
     end)
 
     it("bob should join a contest", function()
-        local res = deposit_advance(machine, BOB_WALLET, 10, {
+        local res = deposit_advance(machine, BOB_WALLET, tobe(10 * e18), {
             action="join_contest",
             contest_id=1,
             gameplay_hash="b646dc09a63ca6dc78c72a7dd67b2e0f99fb05eb7f32e4b4f955f2e4bd08e33a"
@@ -165,7 +172,7 @@ describe("tests", function()
     end)
 
     it("bob should not join a contest twice", function()
-        local res = deposit_advance(machine, BOB_WALLET, 9, {
+        local res = deposit_advance(machine, BOB_WALLET, tobe(9 * e18), {
             action="join_contest",
             contest_id=1,
             gameplay_hash="b646dc09a63ca6dc78c72a7dd67b2e0f99fb05eb7f32e4b4f955f2e4bd08e33a"
@@ -180,14 +187,14 @@ describe("tests", function()
             contest_id=1,
             host=tohex(HOST_WALLET),
             name="Contest",
-            ticket_price=tohex(bint256.tobe(10)),
+            ticket_price=tohexbe(10 * e18),
             difficulty=3,
             level=1,
             play_time = 3600,
             submission_time = 4800,
             creation_timestamp=1,
             state="ready_to_play",
-            prize_pool=tohex(bint256.tobe(118)),
+            prize_pool=tohexbe(118 * e18),
             players={
                 {wallet = tohex(ALICE_WALLET), score=null, reward=null},
                 {wallet = tohex(BOB_WALLET), score=null, reward=null},
@@ -196,7 +203,7 @@ describe("tests", function()
     end)
 
     it("carlo should join a contest paying more than tickt price", function()
-        local res = deposit_advance(machine, CARLO_WALLET, 20, {
+        local res = deposit_advance(machine, CARLO_WALLET, tobe(20 * e18), {
             action="join_contest",
             contest_id=1,
             gameplay_hash="b646dc09a63ca6dc78c72a7dd67b2e0f99fb05eb7f32e4b4f955f2e4bd08e33a"
@@ -211,14 +218,14 @@ describe("tests", function()
             contest_id=1,
             host=tohex(HOST_WALLET),
             name="Contest",
-            ticket_price=tohex(bint256.tobe(10)),
+            ticket_price=tohexbe(10 * e18),
             difficulty=3,
             level=1,
             play_time = 3600,
             submission_time = 4800,
             creation_timestamp=1,
             state="ready_to_play",
-            prize_pool=tohex(bint256.tobe(136)),
+            prize_pool=tohexbe(136 * e18),
             players={
                 {wallet = tohex(ALICE_WALLET), score=null, reward=null},
                 {wallet = tohex(BOB_WALLET), score=null, reward=null},
@@ -260,14 +267,14 @@ describe("tests", function()
             contest_id=1,
             host=tohex(HOST_WALLET),
             name="Contest",
-            ticket_price=tohex(bint256.tobe(10)),
+            ticket_price=tohexbe(10 * e18),
             difficulty=3,
             level=1,
             play_time = 3600,
             submission_time = 4800,
             creation_timestamp=1,
             state="gameplay_submission",
-            prize_pool=tohex(bint256.tobe(136)),
+            prize_pool=tohexbe(136 * e18),
             players={
                 {wallet = tohex(ALICE_WALLET), score=-12, reward=null},
                 {wallet = tohex(BOB_WALLET), score=-5, reward=null},
@@ -291,17 +298,17 @@ describe("tests", function()
             contest_id=1,
             host=tohex(HOST_WALLET),
             name="Contest",
-            ticket_price=tohex(bint256.tobe(10)),
+            ticket_price=tohexbe(10 * e18),
             difficulty=3,
             level=1,
             play_time = 3600,
             submission_time = 4800,
             creation_timestamp=1,
             state="finalized",
-            prize_pool=tohex(bint256.tobe(136)),
+            prize_pool=tohexbe(136 * e18),
             players={
-                {wallet = tohex(ALICE_WALLET), score=-12, reward=tohex(bint256.tobe(0))},
-                {wallet = tohex(BOB_WALLET), score=-5, reward=tohex(bint256.tobe(136))},
+                {wallet = tohex(ALICE_WALLET), score=-12, reward=tohexbe('45300000000000000000')},
+                {wallet = tohex(BOB_WALLET), score=-5, reward=tohexbe('90700000000000000000')},
                 {wallet = tohex(CARLO_WALLET), score=null, reward=null},
             },
         })
@@ -314,17 +321,17 @@ describe("tests", function()
             contest_id=1,
             host=tohex(HOST_WALLET),
             name="Contest",
-            ticket_price=tohex(bint256.tobe(10)),
+            ticket_price=tohexbe(10 * e18),
             difficulty=3,
             level=1,
             play_time = 3600,
             submission_time = 4800,
             creation_timestamp=1,
             state="finalized",
-            prize_pool=tohex(bint256.tobe(136)),
+            prize_pool=tohexbe(136 * e18),
             players={
-                {wallet = tohex(ALICE_WALLET), score=-12, reward=tohex(bint256.tobe(0))},
-                {wallet = tohex(BOB_WALLET), score=-5, reward=tohex(bint256.tobe(136))},
+                {wallet = tohex(ALICE_WALLET), score=-12, reward=tohexbe('45300000000000000000')},
+                {wallet = tohex(BOB_WALLET), score=-5, reward=tohexbe('90700000000000000000')},
                 {wallet = tohex(CARLO_WALLET), score=null, reward=null},
             },
         })
