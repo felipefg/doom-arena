@@ -8,6 +8,15 @@ import GraphQLProvider from "../providers/graphqlProvider";
 import StyleProvider from "../providers/styleProvider";
 import WalletProvider from "../providers/walletProvider";
 import { Shell } from "./shell";
+import { SWRConfig } from "swr";
+
+const fetcher = async <JSON = any,>(
+    input: RequestInfo,
+    init?: RequestInit
+): Promise<JSON> => {
+    const res = await fetch(input, init);
+    return res.json();
+};
 
 const Layout: FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
@@ -19,9 +28,11 @@ const Layout: FC<{ children: React.ReactNode }> = ({ children }) => {
             <body>
                 <StyleProvider>
                     <WalletProvider>
-                        <GraphQLProvider>
-                            <Shell>{children}</Shell>
-                        </GraphQLProvider>
+                        <SWRConfig value={{ fetcher }}>
+                            <GraphQLProvider>
+                                <Shell>{children}</Shell>
+                            </GraphQLProvider>
+                        </SWRConfig>
                     </WalletProvider>
                 </StyleProvider>
             </body>

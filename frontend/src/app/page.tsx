@@ -37,7 +37,7 @@ const Home: FC = () => {
                     <>
                         <Title>{contest.name}</Title>
                         <Text>Hosted by {contest.host}</Text>
-                        <DifficultyLevel value={contest.difficulty} />
+                        <DifficultyLevel value={contest.difficulty - 1} />
                         <Text size="sm">
                             {formatUnits(
                                 hexToBigInt(contest.ticket_price as Hex),
