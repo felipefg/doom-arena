@@ -1,8 +1,9 @@
 import { FC } from "react";
-import { ActionIcon, Table } from "@mantine/core";
+import { ActionIcon, Group, Table, Tooltip } from "@mantine/core";
 import { Player } from "../model";
 import Link from "next/link";
-import { TbPlayerPlayFilled } from "react-icons/tb";
+import { TbPlayerPlayFilled, TbUpload } from "react-icons/tb";
+import { useAccount } from "wagmi";
 
 export type LeaderboardProps = {
     contestId: number;
@@ -10,6 +11,7 @@ export type LeaderboardProps = {
 };
 
 export const Leaderboard: FC<LeaderboardProps> = ({ contestId, players }) => {
+    const { address } = useAccount();
     return (
         <Table>
             <Table.Thead>
@@ -27,15 +29,29 @@ export const Leaderboard: FC<LeaderboardProps> = ({ contestId, players }) => {
                         <Table.Td>{player.score}</Table.Td>
                         <Table.Td>{player.reward}</Table.Td>
                         <Table.Td>
-                            {player.score && (
-                                <Link
-                                    href={`/replay/${contestId}/${player.wallet}`}
-                                >
-                                    <ActionIcon>
-                                        <TbPlayerPlayFilled />
-                                    </ActionIcon>
-                                </Link>
-                            )}
+                            <Group gap={5}>
+                                {player.score && (
+                                    <Link
+                                        href={`/replay/${contestId}/${player.wallet}`}
+                                    >
+                                        <Tooltip label="Replay">
+                                            <ActionIcon>
+                                                <TbPlayerPlayFilled />
+                                            </ActionIcon>
+                                        </Tooltip>
+                                    </Link>
+                                )}
+                                {player.wallet.toLowerCase() ===
+                                    address?.toLowerCase() && (
+                                    <Link href={`/submit/${contestId}`}>
+                                        <Tooltip label="Submit">
+                                            <ActionIcon>
+                                                <TbUpload />
+                                            </ActionIcon>
+                                        </Tooltip>
+                                    </Link>
+                                )}
+                            </Group>
                         </Table.Td>
                     </Table.Tr>
                 ))}

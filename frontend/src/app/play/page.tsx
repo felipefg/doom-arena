@@ -3,7 +3,6 @@ import Script from "next/script";
 import { Button, Center, Group, Stack, Text, Loader } from "@mantine/core";
 import useDownloader from "react-use-downloader";
 import { FC, useState } from "react";
-import { ApproveButton } from "../../components/ApproveButton";
 import { TbDownload } from "react-icons/tb";
 
 let cartridgeData: Uint8Array | undefined = undefined;

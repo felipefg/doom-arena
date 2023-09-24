@@ -54,7 +54,7 @@ const Home: FC = () => {
                                 buttonProps={{ size: "lg" }}
                                 contestId={contest.contest_id}
                             />
-                            <Link href="/play">
+                            <Link href={`/play/${contest.contest_id}`}>
                                 <Button size="lg">Play Now</Button>
                             </Link>
                         </Group>

@@ -1,13 +1,5 @@
 "use client";
-import {
-    Button,
-    Center,
-    Group,
-    Stack,
-    Text,
-    Textarea,
-    Title,
-} from "@mantine/core";
+import { Button, Center, Group, Stack, Text, Title } from "@mantine/core";
 import { Dropzone, FileWithPath } from "@mantine/dropzone";
 import { FC, useState } from "react";
 import { TbExclamationCircle, TbUpload } from "react-icons/tb";
@@ -20,8 +12,6 @@ import {
     useInputBoxAddInput,
     usePrepareInputBoxAddInput,
 } from "../../../hooks/contracts";
-
-let rivlogData: Uint8Array | undefined = undefined;
 
 type PlayContextGameParams = {
     params: { contest_id: string };

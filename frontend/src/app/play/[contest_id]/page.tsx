@@ -76,8 +76,8 @@ const PlayContestGame: FC<PlayContextGameParams> = ({
         let buf = Module._malloc(cartridgeData.length);
         // @ts-ignore:next-line
         Module.HEAPU8.set(cartridgeData, buf);
-        let difficulty = contest.difficulty;
-        let level = contest.level;
+        const difficulty = contest?.difficulty ?? 3;
+        let level = contest?.level ?? 1;
         let params = `-iwad doom1.wad -skill ${difficulty} -warp 1 ${level} -levelquit ${level} -deathquit -nowipe -nomenu`;
         // @ts-ignore:next-line
         Module.ccall(
