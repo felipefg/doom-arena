@@ -12,6 +12,7 @@ import {
     useInputBoxAddInput,
     usePrepareInputBoxAddInput,
 } from "../../../hooks/contracts";
+import { ContestCard } from "../../../components/ContestCard";
 
 type PlayContextGameParams = {
     params: { contest_id: string };
@@ -47,8 +48,8 @@ const PlayContestGame: FC<PlayContextGameParams> = ({
 
     return (
         <Center>
-            <Stack align="center" mt={20}>
-                <Title>{contest?.name}</Title>
+            <Stack align="center" mt={30}>
+                {contest?.contest_id && <ContestCard contest={contest} />}
                 <Group justify="space-between" w="100%">
                     <Dropzone
                         onDrop={(files) => readFile(files[0])}

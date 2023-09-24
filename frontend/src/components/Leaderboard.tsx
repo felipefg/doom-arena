@@ -29,12 +29,16 @@ export const Leaderboard: FC<LeaderboardProps> = ({ contestId, players }) => {
                         <Table.Td>{player.wallet}</Table.Td>
                         <Table.Td>{player.score}</Table.Td>
                         <Table.Td>
-                            {formatUnits(hexToBigInt(player.reward as Hex), 18)}{" "}
-                            APE
+                            {player.reward
+                                ? `${formatUnits(
+                                      hexToBigInt(player.reward as Hex),
+                                      18
+                                  )} APE`
+                                : ""}
                         </Table.Td>
                         <Table.Td>
                             <Group gap={5}>
-                                {player.score && (
+                                {player.score != undefined && (
                                     <Link
                                         href={`/replay/${contestId}/${player.wallet}`}
                                     >

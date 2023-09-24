@@ -145,7 +145,7 @@ const PlayContestGame: FC<PlayContextGameParams> = ({
 
     return (
         <Center>
-            <Stack align="center" mt={20}>
+            <Stack align="center" mt={30}>
                 <Title>{contest?.name}</Title>
                 <canvas
                     id="canvas"

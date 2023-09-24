@@ -24,12 +24,11 @@ const Home: FC = () => {
         error,
         data,
     } = useInspect<Contest>(`/active_contest`);
-    console.log(contest);
     return (
         <Center>
-            <Stack align="center">
+            <Stack align="center" py={30}>
                 {isLoading && <Skeleton />}
-                {!contest && !isLoading && (
+                {!contest?.contest_id && !isLoading && (
                     <>
                         <Image
                             src="/img/logo.png"
@@ -42,7 +41,7 @@ const Home: FC = () => {
                         </Link>
                     </>
                 )}
-                {contest && (
+                {contest?.contest_id && (
                     <>
                         <ContestCard contest={contest} />
                         <Group>
@@ -54,7 +53,7 @@ const Home: FC = () => {
                         <Title order={4}>Leaderboard</Title>
                         <Leaderboard
                             contestId={contest.contest_id}
-                            players={contest.players}
+                            players={contest.players ?? []}
                         />
                     </>
                 )}

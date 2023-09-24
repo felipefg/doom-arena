@@ -44,7 +44,7 @@ const CreateGame: FC = () => {
     const { address } = useAccount();
 
     // flag to show payload as debug help
-    const debug = true;
+    const debug = false;
 
     // contest name
     const [name, setName] = useState("");
