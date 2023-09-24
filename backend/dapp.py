@@ -48,9 +48,9 @@ def _json_dump_hex(input):
 
 @dapp.advance()
 def default_handler(rollup: Rollup, data: RollupData) -> bool:
-    print("Default Handler")
-    print(f"{data.metadata.msg_sender=}")
-    print(f"{settings.PORTAL_ERC20_ADDRESS=}")
+    LOGGER.info("Running Default Handler")
+    LOGGER.debug(f"{data.metadata.msg_sender=}")
+    LOGGER.debug(f"{settings.PORTAL_ERC20_ADDRESS=}")
     if data.metadata.msg_sender.lower() == settings.PORTAL_ERC20_ADDRESS.lower():
         return handle_erc20_deposit(rollup, data)
 
@@ -70,6 +70,7 @@ def _decode_erc20_payload(payload):
 
 
 def handle_erc20_deposit(rollup: Rollup, data: RollupData) -> bool:
+    LOGGER.info("Handlong ERC20 Event")
     success, erc20_contract, depositor, value_int, payload_hex = _decode_erc20_payload(data.payload)
 
     payload = json.loads(_hex2str(payload_hex))
@@ -81,6 +82,7 @@ def handle_erc20_deposit(rollup: Rollup, data: RollupData) -> bool:
 
 
 def handle_create_contest(rollup, data, payload, erc20_contract, depositor, value):
+    LOGGER.debug("Handling Create Contest")
     payload = CreateContestInput.parse_obj(payload)
     contest = contests.create_contest(
         input=payload,
@@ -88,30 +90,34 @@ def handle_create_contest(rollup, data, payload, erc20_contract, depositor, valu
         host_wallet=depositor,
         initial_prize_pool=value,
     )
-    print(contests.contests)
     LOGGER.debug("Created contest '%s'", repr(contest))
     return True
 
 
 def handle_join_contest(rollup, data, payload, erc20_contract, depositor, value):
+    LOGGER.debug("Handling Join Contest")
     payload = JoinContestInput.parse_obj(payload)
     contest = contests.get_contest(payload.contest_id)
 
     # Contest must exist
     if contest is None:
+        LOGGER.warning("Join Contest Failed. Unable to find contest")
         return False
 
     # Contest must be in the right state
     if contest.state != 'ready_to_play':
+        LOGGER.warning("Join Contest Failed. Contest is not ready_to_play")
         return False
 
     # Value must be enough to join
     if value < contest.ticket_price:
+        LOGGER.warning("Join Contest Failed. Value is not enough")
         return False
 
     # Player must be unique
     existing_player = contests.get_player(payload.contest_id, depositor)
     if existing_player is not None:
+        LOGGER.warning("Join Contest Failed. Player is already enrolled")
         return False
 
     new_player = Player(
@@ -126,6 +132,7 @@ def handle_join_contest(rollup, data, payload, erc20_contract, depositor, value)
     contest.prize_pool += prize_amount
     contest.host_reward += host_amount
 
+    LOGGER.info("Player joined successfully")
     return True
 
 
@@ -169,38 +176,44 @@ def end_contest(rollup: Rollup, data: RollupData) -> bool:
     """
     Move contest from "ready_to_play" to "gameplay_submission" state.
     """
+    LOGGER.debug("Handling end_contest")
     payload = EndContestInput.parse_obj(data.json_payload())
     contest = contests.get_contest(payload.contest_id)
 
     if contest is None:
+        LOGGER.warning("End contest failed. Contest not found")
         return False
 
     if contest.state != "ready_to_play":
+        LOGGER.warning("End contest failed. Contest not ready_to_play")
         return False
 
     contest.state = 'gameplay_submission'
+    LOGGER.info("Contest playing phase ended successfully")
     return True
 
 
 @json_router.advance({'action': 'submit_contest'})
 def submit_gameplay(rollup: Rollup, data: RollupData) -> bool:
+    LOGGER.debug("Handling submit gameplay")
     payload = SubmitGameplayInput.parse_obj(data.json_payload())
     contest = contests.get_contest(payload.contest_id)
 
     if contest.state != "gameplay_submission":
+        LOGGER.warning("Submit gameplay failed. Contest not gameplay_submission")
         return False
 
     player = contests.get_player(payload.contest_id, data.metadata.msg_sender)
 
     if player is None:
-        print(f'{contests.contests=}')
+        LOGGER.warning("Submit gameplay failed. Player not enrolled")
         return False
 
     gameplay_data = doom.decode_gameplay(payload.gameplay)
     gameplay_data_hash = doom.hash_gameplay(gameplay_data)
 
     if player.gameplay_hash.lower() != gameplay_data_hash.lower():
-        LOGGER.warning("Rejecting gameplay based on hash")
+        LOGGER.warning("Submit gameplay failed. Rejecting gameplay based on hash")
         return False
 
     gameplay_filename = doom.save_gameplay_file(
@@ -214,7 +227,7 @@ def submit_gameplay(rollup: Rollup, data: RollupData) -> bool:
     score = doom.generate_score(gameplay_filename, contest)
 
     player.score = score
-
+    LOGGER.info("Submit gameplay successful")
     return True
 
 
@@ -246,18 +259,21 @@ def get_contest(rollup: Rollup, data: RollupData) -> bool:
 
 @json_router.advance({'action': 'finalize_contest'})
 def finalize_contest(rollup: Rollup, data: RollupData) -> bool:
-
+    LOGGER.debug("Handling Finalize Contest")
     payload = EndContestInput.parse_obj(data.json_payload())
     contest = contests.get_contest(payload.contest_id)
 
     if contest is None:
+        LOGGER.warning("Finalize Contest failed. Contest not found")
         return False
 
     if contest.state != "gameplay_submission":
+        LOGGER.warning("Finalize Contest failed. Contest not gameplay_submission")
         return False
 
     prizes.allocate_prizes(contest)
     contests.finalize_contest(payload.contest_id)
+    LOGGER.info("Contest successfully finalized")
     return True
 
 

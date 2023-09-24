@@ -132,6 +132,7 @@ describe("tests", function()
             state="ready_to_play",
             prize_pool=tohexbe(100 * e18),
             players={},
+            host_reward=tohexbe(0),
         })
     end)
 
@@ -199,6 +200,7 @@ describe("tests", function()
                 {wallet = tohex(ALICE_WALLET), score=null, reward=null},
                 {wallet = tohex(BOB_WALLET), score=null, reward=null},
             },
+            host_reward=tohexbe(2 * e18),
         })
     end)
 
@@ -231,6 +233,7 @@ describe("tests", function()
                 {wallet = tohex(BOB_WALLET), score=null, reward=null},
                 {wallet = tohex(CARLO_WALLET), score=null, reward=null},
             },
+            host_reward=tohexbe(4 * e18),
         })
     end)
 
@@ -280,6 +283,7 @@ describe("tests", function()
                 {wallet = tohex(BOB_WALLET), score=-5, reward=null},
                 {wallet = tohex(CARLO_WALLET), score=null, reward=null},
             },
+            host_reward=tohexbe(4 * e18),
         })
     end)
 
@@ -311,6 +315,7 @@ describe("tests", function()
                 {wallet = tohex(BOB_WALLET), score=-5, reward=tohexbe('90700000000000000000')},
                 {wallet = tohex(CARLO_WALLET), score=null, reward=null},
             },
+            host_reward=tohexbe(4 * e18),
         })
     end)
 
@@ -334,6 +339,7 @@ describe("tests", function()
                 {wallet = tohex(BOB_WALLET), score=-5, reward=tohexbe('90700000000000000000')},
                 {wallet = tohex(CARLO_WALLET), score=null, reward=null},
             },
+            host_reward=tohexbe(4 * e18),
         })
     end)
 
