@@ -273,6 +273,9 @@ def finalize_contest(rollup: Rollup, data: RollupData) -> bool:
 
     prizes.allocate_prizes(contest)
     contests.finalize_contest(payload.contest_id)
+    vouchers = prizes.generate_vouchers(contest, settings.TOKEN_ERC20_ADDRESS)
+    for voucher in vouchers:
+        rollup.voucher(voucher)
     LOGGER.info("Contest successfully finalized")
     return True
 

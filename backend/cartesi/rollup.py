@@ -34,6 +34,10 @@ class Rollup(ABC):
     def report(self, payload) -> str:
         pass
 
+    @abstractmethod
+    def voucher(self, payload) -> str:
+        pass
+
 
 class HTTPRollupServer(Rollup):
     """HTTP Communication with Rollup Server based on Requests"""
@@ -90,6 +94,13 @@ class HTTPRollupServer(Rollup):
             'payload': payload
         }
         response = requests.post(self.address + "/report", json=data)
+        LOGGER.info(f"Received report status {response.status_code} "
+                    f"body {response.content}")
+        return response.content
+
+    def voucher(self, payload: dict):
+        LOGGER.info("Adding voucher")
+        response = requests.post(self.address + '/voucher', json=payload)
         LOGGER.info(f"Received report status {response.status_code} "
                     f"body {response.content}")
         return response.content
