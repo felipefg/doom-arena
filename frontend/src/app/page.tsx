@@ -4,6 +4,8 @@ import {
     Button,
     Center,
     Group,
+    Loader,
+    Skeleton,
     Stack,
     Text,
     Textarea,
@@ -15,12 +17,14 @@ import Link from "next/link";
 import { useInspect } from "../hooks/inspect";
 import { Contest } from "../model";
 import { DifficultyLevel } from "../components/DifficultyLevel";
-import { formatUnits, Hex, hexToBigInt } from "viem";
 import { EndContestButton } from "../components/EndContestButton";
+import { ContestCard } from "../components/ContestCard";
+import { Leaderboard } from "../components/Leaderboard";
 
 const Home: FC = () => {
     const {
         report: contest,
+        isLoading,
         error,
         data,
     } = useInspect<Contest>(`/active_contest`);
@@ -28,9 +32,8 @@ const Home: FC = () => {
     return (
         <Center>
             <Stack align="center">
-                <Textarea value={error} />
-                <Textarea value={JSON.stringify(data)} />
-                {!contest && (
+                {isLoading && <Skeleton />}
+                {!contest && !isLoading && (
                     <>
                         <Image
                             src="/img/logo.png"
@@ -45,20 +48,18 @@ const Home: FC = () => {
                 )}
                 {contest && (
                     <>
-                        <Title>{contest.name}</Title>
-                        <Text>Hosted by {contest.host}</Text>
-                        <DifficultyLevel value={contest.difficulty - 1} />
+                        <ContestCard contest={contest} />
                         <Group>
                             <EndContestButton
                                 buttonProps={{ size: "lg" }}
                                 contestId={contest.contest_id}
                             />
-                            <Stack>
-                                <Link href="/play">
-                                    <Button size="lg">Play Now</Button>
-                                </Link>
-                            </Stack>
+                            <Link href="/play">
+                                <Button size="lg">Play Now</Button>
+                            </Link>
                         </Group>
+                        <Title order={4}>Leaderboard</Title>
+                        <Leaderboard players={contest.players} />
                     </>
                 )}
             </Stack>
