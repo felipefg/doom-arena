@@ -54,3 +54,22 @@ export const useInspect = <TReport>(key: Key): UseInspect<TReport> => {
 
     return { ...swr, report };
 };
+
+export const useRawInspect = <TReport>(key: Key): UseInspect<TReport> => {
+    const swr = useSWR<InspectResponse>(() =>
+        key ? `${baseURL}${key}` : false
+    );
+
+    const response = swr.data;
+    let report = undefined;
+    if (
+        response &&
+        response.status == InspectStatus.Accepted &&
+        response.reports.length > 0
+    ) {
+        const r = response.reports[0];
+        report = toBytes(r.payload);
+    }
+
+    return { ...swr, report };
+};

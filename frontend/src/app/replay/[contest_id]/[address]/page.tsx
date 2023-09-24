@@ -21,18 +21,30 @@ import {
 } from "@mantine/core";
 import useDownloader from "react-use-downloader";
 import { FC, useState } from "react";
+import { useInspect, useRawInspect } from "../../../../hooks/inspect";
 
 var cartridgeData;
-var rivlogData;
 var replayFrames;
 
-const ReplayGame: FC = () => {
+type ReplayContextGameParams = {
+    params: { contest_id: string, address: string };
+};
+
+const ReplayContestGame: FC<ReplayContextGameParams> = ({
+    params: { contest_id, address },
+}) => {
     const theme = useMantineTheme();
     const [progress, setProgress] = useState(0);
     const [overallScore, setOverallScore] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [playBtnText, setPlayBtnText] = useState("Start");
+    const {
+        report: contest
+    } = useInspect<Contest>(`/contest/${contest_id}`);
+    const {
+        report: gameplay
+    } = useRawInspect<Contest>(`/gameplay/${contest_id}/${address}`);
 
     const { download } = useDownloader();
 
@@ -41,9 +53,8 @@ const ReplayGame: FC = () => {
         return new Uint8Array(await res.arrayBuffer());
     }
 
-    async function get_gameplay() {
-        let res = await fetch("/doom.rivlog");
-        return new Uint8Array(await res.arrayBuffer());
+    function get_gameplay() {
+        return new Uint8Array(gameplay);
     }
 
     async function rivemuStartReplay() {
@@ -58,9 +69,6 @@ const ReplayGame: FC = () => {
             // @ts-ignore:next-line
             Module._main();
         }
-        if (!rivlogData) {
-            rivlogData = await get_gameplay();
-        }
         if (!cartridgeData) {
             // @ts-ignore:next-line
             cartridgeData = await get_cartridge();
@@ -70,16 +78,15 @@ const ReplayGame: FC = () => {
         }
         // @ts-ignore:next-line
         let cartridgeBuf = Module._malloc(cartridgeData.length);
-        let rivlogBuf = Module._malloc(rivlogData.length);
+        let rivlogBuf = Module._malloc(gameplay.length);
         // @ts-ignore:next-line
         Module.HEAPU8.set(cartridgeData, cartridgeBuf);
-        Module.HEAPU8.set(rivlogData, rivlogBuf);
-        // TODO: build params from inspect state
-        let difficulty = 3;
-        let level = 2;
+        Module.HEAPU8.set(gameplay, rivlogBuf);
+        let difficulty = contest.difficulty;
+        let level = contest.level;
         let params = "-iwad doom1.wad -skill "+difficulty+" -warp 1 "+level+" -levelquit "+level+" -deathquit -nowipe -nomenu";
         // @ts-ignore:next-line
-        Module.ccall('rivemu_start_replay_ex', null, [ 'number', 'number', 'number', 'number', 'string' ], [ cartridgeBuf, cartridgeData.length, rivlogBuf, rivlogData.length, params ]);
+        Module.ccall('rivemu_start_replay_ex', null, [ 'number', 'number', 'number', 'number', 'string' ], [ cartridgeBuf, cartridgeData.length, rivlogBuf, gameplay.length, params ]);
         // @ts-ignore:next-line
         Module._free(cartridgeBuf);
         Module._free(rivlogBuf);
@@ -132,4 +139,4 @@ const ReplayGame: FC = () => {
     );
 };
 
-export default ReplayGame;
+export default ReplayContestGame;
