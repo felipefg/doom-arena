@@ -1,9 +1,12 @@
 "use client";
 import { AppShell, Group } from "@mantine/core";
 import { FC } from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import Image from "next/image";
+
+export default function ConnectButton() {
+    return <w3m-button />;
+}
 
 export const Shell: FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
