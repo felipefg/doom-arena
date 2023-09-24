@@ -1,13 +1,6 @@
-import {
-    Button,
-    ButtonProps,
-    Group,
-    Stack,
-    Text,
-    TextInput,
-} from "@mantine/core";
+import { Button, ButtonProps } from "@mantine/core";
 import { FC } from "react";
-import { Address, formatUnits } from "viem";
+import { Address } from "viem";
 import { useWaitForTransaction } from "wagmi";
 import {
     erc20PortalAddress,

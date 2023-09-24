@@ -68,6 +68,7 @@ const CreateGame: FC = () => {
         address: token,
         args: [address!, erc20PortalAddress],
         enabled: !!address,
+        watch: true,
     });
 
     // input payload (sent through ERC20-deposit)

@@ -6,5 +6,5 @@ module.exports = {
         return config;
     },
     images: { unoptimized: true },
-    output: "export",
+    // output: "export",
 };

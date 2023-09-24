@@ -1,20 +1,52 @@
 "use client";
 import Script from "next/script";
-import { Button, Center, Group, Stack, Text, Loader } from "@mantine/core";
+import {
+    Badge,
+    Button,
+    Center,
+    Collapse,
+    Group,
+    Stack,
+    Text,
+    Title,
+    useMantineTheme,
+} from "@mantine/core";
 import useDownloader from "react-use-downloader";
 import { FC, useState } from "react";
-import { ApproveButton } from "../../components/ApproveButton";
-import { TbDownload } from "react-icons/tb";
+import {
+    TbDownload,
+    TbPlayerPlayFilled,
+    TbPlayerSkipBackFilled,
+    TbPlayerStopFilled,
+} from "react-icons/tb";
+
+import { useInspect } from "../../../hooks/inspect";
+import { Contest } from "../../../model";
+import { useDisclosure } from "@mantine/hooks";
+import { JoinContest } from "../../../components/JoinContest";
+import { Address } from "viem";
 
 let cartridgeData: Uint8Array | undefined = undefined;
 let rivlogData: Uint8Array | undefined = undefined;
 
-const PlayGame: FC = () => {
+type PlayContextGameParams = {
+    params: { contest_id: string };
+};
+
+const PlayContestGame: FC<PlayContextGameParams> = ({
+    params: { contest_id },
+}) => {
+    const {
+        report: contest,
+        error,
+        data,
+    } = useInspect<Contest>(`/contest/${contest_id}`);
+
     const [overallScore, setOverallScore] = useState(0);
     const [isDownloadAvailable, setDownloadAvailable] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [playBtnText, setPlayBtnText] = useState("Start");
+    const [join, { toggle }] = useDisclosure();
 
     const { download } = useDownloader();
 
@@ -28,7 +60,6 @@ const PlayGame: FC = () => {
         setIsLoading(true);
         setDownloadAvailable(false);
         setIsPlaying(true);
-        setPlayBtnText("Restart");
         // @ts-ignore:next-line
         if (Module.quited) {
             // restart wasm when back to page
@@ -106,9 +137,17 @@ const PlayGame: FC = () => {
             setDownloadAvailable(true);
         };
     }
+
+    const theme = useMantineTheme();
+    const dapp = process.env.NEXT_PUBLIC_DAPP_ADDRESS as Address;
+    const token = process.env.NEXT_PUBLIC_TOKEN_ADDRESS as Address;
+
+    const canJoin = !!rivlogData;
+
     return (
         <Center>
             <Stack align="center" mt={20}>
+                <Title>{contest?.name}</Title>
                 <canvas
                     id="canvas"
                     height={400}
@@ -116,37 +155,78 @@ const PlayGame: FC = () => {
                     onContextMenu={(e) => e.preventDefault()}
                     tabIndex={1}
                 />
-                <Text size="lg" fw={700}>
-                    Score: {overallScore}
-                </Text>
-                <Group>
-                    {isLoading && <Loader />}
-                    <Button
-                        onKeyDown={(e) => e.preventDefault()}
-                        onClick={rivemuStart}
-                    >
-                        {playBtnText}
-                    </Button>
-                    <Button
-                        onKeyDown={(e) => e.preventDefault()}
-                        onClick={rivemuStop}
-                        disabled={!isPlaying}
-                    >
-                        Stop
-                    </Button>
-                    <Button
-                        onKeyDown={(e) => e.preventDefault()}
-                        onClick={rivemuDownloadGameplay}
-                        leftSection={<TbDownload />}
-                        disabled={!isDownloadAvailable}
-                    >
-                        Download Gameplay
-                    </Button>
+                <Group justify="space-between" w="100%">
+                    <Group>
+                        <Button
+                            onKeyDown={(e) => e.preventDefault()}
+                            onClick={rivemuStart}
+                            loading={isLoading}
+                            leftSection={
+                                isPlaying ? (
+                                    <TbPlayerSkipBackFilled />
+                                ) : (
+                                    <TbPlayerPlayFilled />
+                                )
+                            }
+                        >
+                            {isPlaying ? "Restart" : "Start"}
+                        </Button>
+                        <Button
+                            onKeyDown={(e) => e.preventDefault()}
+                            onClick={rivemuStop}
+                            leftSection={<TbPlayerStopFilled />}
+                            disabled={!isPlaying}
+                        >
+                            Stop
+                        </Button>
+                    </Group>
+                    <Group>
+                        <Text>Score</Text>
+                        <Badge
+                            variant="filled"
+                            color={theme.primaryColor}
+                            size="xl"
+                        >
+                            {overallScore}
+                        </Badge>
+                    </Group>
+                    <Group>
+                        <Button disabled={!canJoin} onClick={toggle}>
+                            Join Contest!
+                        </Button>
+                        <Button
+                            onKeyDown={(e) => e.preventDefault()}
+                            onClick={rivemuDownloadGameplay}
+                            leftSection={<TbDownload />}
+                            disabled={!isDownloadAvailable}
+                        >
+                            Download
+                        </Button>
+                    </Group>
                 </Group>
+                <Collapse in={join} w="100%">
+                    {rivlogData && (
+                        <JoinContest
+                            contestId={1}
+                            dapp={dapp}
+                            token={token}
+                            ticketPrice={10n * 10n ** 18n}
+                            gamelog={rivlogData}
+                        />
+                    )}
+                </Collapse>
             </Stack>
             <Script src="/rivemu.js" strategy="lazyOnload" />
         </Center>
     );
 };
 
-export default PlayGame;
+// play freely
+// stop game
+// join
+// check balance
+// approve allowance
+// deposit + commit
+// download
+
+export default PlayContestGame;
