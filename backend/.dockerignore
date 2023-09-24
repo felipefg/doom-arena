@@ -1,11 +1,5 @@
 .*
 *~
-*.bin
-
 __pycache__/
 *.py[cod]
-
-riv
-tests
-Makefile
 *.Dockerfile

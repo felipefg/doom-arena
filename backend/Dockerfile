@@ -17,13 +17,14 @@ EOF
 ENV PATH="/opt/cartesi/bin:${PATH}"
 
 # install riv rootfs
-COPY --from=riv-toolchain /rootfs /rivos
+COPY rivos.tar /rivos.tar
+RUN tar -C / -xf /rivos.tar && mv /rootfs /rivos && rm -f rivos.tar
 RUN cp /rivos/etc/sysctl.conf /etc/sysctl.conf
 RUN mkdir -p /rivos/cartridges
 COPY doom.sqfs /rivos/cartridges/doom.sqfs
 
 # install custom init
-COPY --from=riv-toolchain /rootfs/sbin/init /opt/cartesi/bin/init
+RUN cp /rivos/sbin/init /opt/cartesi/bin/init
 
 # install musl libc
 RUN ln -s /rivos/lib/ld-musl-riscv64.so.1 /lib/
@@ -41,7 +42,9 @@ pip install -r requirements.txt --no-cache
 find /usr/local/lib -type d -name __pycache__ -exec rm -r {} +
 EOF
 
-COPY . .
+COPY ./cartesi cartesi
+COPY ./doom_arena doom_arena
+COPY ./dapp.py .
 
 ENV ROLLUP_HTTP_SERVER_URL="http://127.0.0.1:5004"
 

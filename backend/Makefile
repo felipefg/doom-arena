@@ -1,16 +1,12 @@
-all: submodules downloads riv-toolchain sunodo-sdk-riv image
+all: downloads sunodo-sdk-riv image
 
 image:
 	sunodo build
 
-submodules:
-	git submodule update --init --recursive
+sunodo-sdk-riv:
+	docker build --tag sunodo/sdk:0.2.0-riv --file sunodo-sdk.Dockerfile --progress plain .
 
 downloads:
 	wget -O doom.sqfs https://github.com/edubart/riv/releases/download/downloads/doom.sqfs
-
-riv-toolchain:
-	make -C riv download-images toolchain
-
-sunodo-sdk-riv:
-	docker build --tag sunodo/sdk:0.2.0-riv --file sunodo-sdk.Dockerfile --progress plain .
+	wget -O rivos.tar https://github.com/edubart/riv/releases/download/downloads/rootfs.tar
+	wget -O linux.bin https://github.com/edubart/riv/releases/download/downloads/linux.bin
