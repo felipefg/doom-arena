@@ -59,7 +59,10 @@ const Home: FC = () => {
                             </Link>
                         </Group>
                         <Title order={4}>Leaderboard</Title>
-                        <Leaderboard players={contest.players} />
+                        <Leaderboard
+                            contestId={contest.contest_id}
+                            players={contest.players}
+                        />
                     </>
                 )}
             </Stack>

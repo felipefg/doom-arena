@@ -55,7 +55,7 @@ export const useInspect = <TReport>(key: Key): UseInspect<TReport> => {
     return { ...swr, report };
 };
 
-export const useRawInspect = <TReport>(key: Key): UseInspect<TReport> => {
+export const useRawInspect = (key: Key): UseInspect<Uint8Array> => {
     const swr = useSWR<InspectResponse>(() =>
         key ? `${baseURL}${key}` : false
     );
