@@ -1,6 +1,14 @@
 "use client";
 import React, { FC } from "react";
-import { Button, Center, Stack, Text, Textarea, Title } from "@mantine/core";
+import {
+    Button,
+    Center,
+    Group,
+    Stack,
+    Text,
+    Textarea,
+    Title,
+} from "@mantine/core";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -8,6 +16,7 @@ import { useInspect } from "../hooks/inspect";
 import { Contest } from "../model";
 import { DifficultyLevel } from "../components/DifficultyLevel";
 import { formatUnits, Hex, hexToBigInt } from "viem";
+import { EndContestButton } from "../components/EndContestButton";
 
 const Home: FC = () => {
     const {
@@ -15,6 +24,7 @@ const Home: FC = () => {
         error,
         data,
     } = useInspect<Contest>(`/active_contest`);
+    console.log(contest);
     return (
         <Center>
             <Stack align="center">
@@ -38,16 +48,17 @@ const Home: FC = () => {
                         <Title>{contest.name}</Title>
                         <Text>Hosted by {contest.host}</Text>
                         <DifficultyLevel value={contest.difficulty - 1} />
-                        <Text size="sm">
-                            {formatUnits(
-                                hexToBigInt(contest.ticket_price as Hex),
-                                18
-                            )}{" "}
-                            APE to signup
-                        </Text>
-                        <Link href="/play">
-                            <Button size="lg">Play Now</Button>
-                        </Link>
+                        <Group>
+                            <EndContestButton
+                                buttonProps={{ size: "lg" }}
+                                contestId={contest.contest_id}
+                            />
+                            <Stack>
+                                <Link href="/play">
+                                    <Button size="lg">Play Now</Button>
+                                </Link>
+                            </Stack>
+                        </Group>
                     </>
                 )}
             </Stack>

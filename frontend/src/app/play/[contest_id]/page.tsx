@@ -220,12 +220,4 @@ const PlayContestGame: FC<PlayContextGameParams> = ({
     );
 };
 
-// play freely
-// stop game
-// join
-// check balance
-// approve allowance
-// deposit + commit
-// download
-
 export default PlayContestGame;
