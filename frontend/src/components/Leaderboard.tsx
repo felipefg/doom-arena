@@ -4,6 +4,7 @@ import { Player } from "../model";
 import Link from "next/link";
 import { TbPlayerPlayFilled, TbUpload } from "react-icons/tb";
 import { useAccount } from "wagmi";
+import { Hex, formatUnits, hexToBigInt } from "viem";
 
 export type LeaderboardProps = {
     contestId: number;
@@ -27,7 +28,10 @@ export const Leaderboard: FC<LeaderboardProps> = ({ contestId, players }) => {
                     <Table.Tr key={player.wallet}>
                         <Table.Td>{player.wallet}</Table.Td>
                         <Table.Td>{player.score}</Table.Td>
-                        <Table.Td>{player.reward}</Table.Td>
+                        <Table.Td>
+                            {formatUnits(hexToBigInt(player.reward as Hex), 18)}{" "}
+                            APE
+                        </Table.Td>
                         <Table.Td>
                             <Group gap={5}>
                                 {player.score && (
