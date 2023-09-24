@@ -3,12 +3,10 @@ import React, { FC } from "react";
 import {
     Button,
     Center,
+    Divider,
     Group,
-    Loader,
     Skeleton,
     Stack,
-    Text,
-    Textarea,
     Title,
 } from "@mantine/core";
 import Image from "next/image";
@@ -16,8 +14,6 @@ import Link from "next/link";
 
 import { useInspect } from "../hooks/inspect";
 import { Contest } from "../model";
-import { DifficultyLevel } from "../components/DifficultyLevel";
-import { EndContestButton } from "../components/EndContestButton";
 import { ContestCard } from "../components/ContestCard";
 import { Leaderboard } from "../components/Leaderboard";
 
@@ -50,14 +46,11 @@ const Home: FC = () => {
                     <>
                         <ContestCard contest={contest} />
                         <Group>
-                            <EndContestButton
-                                buttonProps={{ size: "lg" }}
-                                contestId={contest.contest_id}
-                            />
                             <Link href={`/play/${contest.contest_id}`}>
                                 <Button size="lg">Play Now</Button>
                             </Link>
                         </Group>
+                        <Divider />
                         <Title order={4}>Leaderboard</Title>
                         <Leaderboard
                             contestId={contest.contest_id}

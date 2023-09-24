@@ -4,6 +4,8 @@ import { Contest } from "../model";
 import { DifficultyLevel } from "./DifficultyLevel";
 import { TbClockStop, TbDots, TbTrophy } from "react-icons/tb";
 import { Hex, formatUnits, hexToBigInt } from "viem";
+import { EndContestMenuItem } from "./EndContestMenuItem";
+import { FinalizeContestMenuItem } from "./FinalizeContestMenuItem";
 
 export type ContestCardProps = {
     contest: Contest;
@@ -22,12 +24,12 @@ export const ContestCard: FC<ContestCardProps> = ({ contest }) => {
                             </ActionIcon>
                         </Menu.Target>
                         <Menu.Dropdown>
-                            <Menu.Item leftSection={<TbClockStop />}>
-                                End Contest
-                            </Menu.Item>
-                            <Menu.Item leftSection={<TbTrophy />}>
-                                Finalize Contest
-                            </Menu.Item>
+                            <EndContestMenuItem
+                                contestId={contest.contest_id}
+                            />
+                            <FinalizeContestMenuItem
+                                contestId={contest.contest_id}
+                            />
                         </Menu.Dropdown>
                     </Menu>
                 </Group>

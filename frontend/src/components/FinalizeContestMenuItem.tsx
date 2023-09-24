@@ -1,25 +1,26 @@
-import { Button, ButtonProps } from "@mantine/core";
+import { Menu, MenuItemProps } from "@mantine/core";
 import { FC } from "react";
 import { Address, toHex } from "viem";
 import { useWaitForTransaction } from "wagmi";
+import { TbTrophy } from "react-icons/tb";
 
 import {
     useInputBoxAddInput,
     usePrepareInputBoxAddInput,
 } from "../hooks/contracts";
 
-export type EndContestButtonProps = {
-    buttonProps: ButtonProps;
+export type FinalizeContestMenuItemProps = {
+    menuItemProps?: MenuItemProps;
     contestId: number;
 };
 
-export const EndContestButton: FC<EndContestButtonProps> = ({
-    buttonProps,
+export const FinalizeContestMenuItem: FC<FinalizeContestMenuItemProps> = ({
+    menuItemProps,
     contestId,
 }) => {
     const dapp = process.env.NEXT_PUBLIC_DAPP_ADDRESS as Address;
     const payload = {
-        action: "end_contest",
+        action: "finalize_contest",
         contest_id: contestId,
     };
 
@@ -31,8 +32,13 @@ export const EndContestButton: FC<EndContestButtonProps> = ({
     const wait = useWaitForTransaction(data);
 
     return (
-        <Button {...buttonProps} onClick={write} disabled={!write}>
-            End Contest
-        </Button>
+        <Menu.Item
+            {...menuItemProps}
+            leftSection={<TbTrophy />}
+            onClick={write}
+            disabled={!write}
+        >
+            Finalize Contest
+        </Menu.Item>
     );
 };
