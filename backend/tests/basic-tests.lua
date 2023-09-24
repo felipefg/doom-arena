@@ -110,7 +110,7 @@ describe("tests", function()
     end)
 ]]
     it("should get active contest", function()
-        local res = inspect(machine, "/active_contest")
+        local res = inspect(machine, "active_contest")
         expect.equal(res.status, "accepted")
         expect.equal(res.reports[1], {
             contest_id=1,
@@ -174,7 +174,7 @@ describe("tests", function()
     end)
 
     it("should get active contest", function()
-        local res = inspect(machine, "/active_contest")
+        local res = inspect(machine, "active_contest")
         expect.equal(res.status, "accepted")
         expect.equal(res.reports[1], {
             contest_id=1,
@@ -205,7 +205,7 @@ describe("tests", function()
     end)
 
     it("should get active contest", function()
-        local res = inspect(machine, "/active_contest")
+        local res = inspect(machine, "active_contest")
         expect.equal(res.status, "accepted")
         expect.equal(res.reports[1], {
             contest_id=1,
@@ -254,7 +254,7 @@ describe("tests", function()
     end)
 
     it("should get active contest scores", function()
-        local res = inspect(machine, "/active_contest")
+        local res = inspect(machine, "active_contest")
         expect.equal(res.status, "accepted")
         expect.equal(res.reports[1], {
             contest_id=1,
@@ -285,7 +285,7 @@ describe("tests", function()
     end)
 
     it("should get active contest", function()
-        local res = inspect(machine, "/active_contest")
+        local res = inspect(machine, "active_contest")
         expect.equal(res.status, "accepted")
         expect.equal(res.reports[1], {
             contest_id=1,
@@ -308,7 +308,7 @@ describe("tests", function()
     end)
 
     it("should get first contest", function()
-        local res = inspect(machine, "/contest/1")
+        local res = inspect(machine, "contest/1")
         expect.equal(res.status, "accepted")
         expect.equal(res.reports[1], {
             contest_id=1,
@@ -331,7 +331,7 @@ describe("tests", function()
     end)
 
     it("should retrieve gameplay file", function()
-        local res = raw_inspect(machine, "/gameplay/1/" .. tohex(ALICE_WALLET))
+        local res = raw_inspect(machine, "gameplay/1/" .. tohex(ALICE_WALLET))
         expect.equal(res.status, "accepted")
         expect.equal(res.reports[1].payload, read_file("alice.rivlog"))
     end)

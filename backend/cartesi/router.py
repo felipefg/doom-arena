@@ -58,7 +58,6 @@ class JSONRouter(Router):
         try:
             req_data = request.data.json_payload()
         except Exception:
-            print(f"Invalid JSON: {request.data=}")
             return None
         print(f"Valid data: {req_data=}")
         if request.request_type == 'advance_state':
@@ -143,14 +142,11 @@ class URLRouter(Router):
     def get_handler(self, request: RollupResponse):
         """Return first matching route for the given request"""
         try:
-            print("Aqui")
             req_path = request.data.str_payload()
             print(req_path)
         except Exception:
             return None
 
-        if not req_path.startswith('/'):
-            return None
         print(f"Looking for matches in {len(self.routes)} routes")
         for route in self.routes:
             if request.request_type != route.requestType:

@@ -228,13 +228,13 @@ def _get_report_for_contest(contest: Contest, rollup: Rollup) -> bool:
     return True
 
 
-@url_router.inspect("/active_contest")
+@url_router.inspect("active_contest")
 def get_active_contest(rollup: Rollup, data: RollupData) -> bool:
     contest = contests.get_active_contest()
     return _get_report_for_contest(contest, rollup)
 
 
-@url_router.inspect("/contest/([0-9]+)")
+@url_router.inspect("contest/([0-9]+)")
 def get_contest(rollup: Rollup, data: RollupData) -> bool:
     path = data.str_payload()
     _, _, contest_id = path.rpartition('/')
@@ -260,7 +260,7 @@ def finalize_contest(rollup: Rollup, data: RollupData) -> bool:
     return True
 
 
-GAMEPLAY_RE = r'/gameplay/(?P<contest_id>[0-9]+)/(?P<wallet>0x[0-9a-fA-F]+)'
+GAMEPLAY_RE = r'gameplay/(?P<contest_id>[0-9]+)/(?P<wallet>0x[0-9a-fA-F]+)'
 
 
 @url_router.inspect(GAMEPLAY_RE)
