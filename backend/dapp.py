@@ -1,6 +1,7 @@
 import logging
 import json
 from math import floor
+import re
 
 from pydantic import BaseSettings
 
@@ -256,6 +257,32 @@ def finalize_contest(rollup: Rollup, data: RollupData) -> bool:
 
     prizes.allocate_prizes(contest)
     contests.finalize_contest(payload.contest_id)
+    return True
+
+
+GAMEPLAY_RE = r'/gameplay/(?P<contest_id>[0-9]+)/(?P<wallet>0x[0-9a-fA-F]+)'
+
+
+@url_router.inspect(GAMEPLAY_RE)
+def get_gameplay(rollup: Rollup, data: RollupData) -> bool:
+    path = data.str_payload()
+    result = re.match(GAMEPLAY_RE, path)
+    if result is None:
+        return False
+    result = result.groupdict()
+    contest_id = int(result['contest_id'])
+    wallet = result['wallet']
+
+    player = contests.get_player(contest_id, wallet)
+    filename = player.gameplay_filename
+
+    if filename is None:
+        return False
+
+    with open(filename, 'rb') as fin:
+        data = fin.read()
+
+    rollup.report('0x' + data.hex())
     return True
 
 

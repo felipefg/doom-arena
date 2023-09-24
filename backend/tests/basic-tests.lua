@@ -72,6 +72,9 @@ local function inspect(machine, path)
     return decode_response_jsons(machine:inspect_state({payload = path}))
 end
 
+local function raw_inspect(machine, path)
+    return machine:inspect_state({payload = path})
+end
 --------------
 -- Tests
 
@@ -299,5 +302,11 @@ describe("tests", function()
                 {wallet = tohex(CARLO_WALLET), score=null, reward=null},
             },
         })
+    end)
+
+    it("should retrieve gameplay file", function()
+        local res = raw_inspect(machine, "/gameplay/1/" .. tohex(ALICE_WALLET))
+        expect.equal(res.status, "accepted")
+        expect.equal(res.reports[1].payload, read_file("alice.rivlog"))
     end)
 end)
