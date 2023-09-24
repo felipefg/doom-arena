@@ -160,6 +160,7 @@ def _format_contest_output(contest: Contest) -> dict:
         "state": contest.state,
         "players": players,
         "prize_pool": _int_to_hex(contest.prize_pool),
+        "host_reward": _int_to_hex(contest.host_reward),
     }
 
 
