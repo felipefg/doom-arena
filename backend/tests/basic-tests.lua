@@ -292,7 +292,33 @@ describe("tests", function()
             action="finalize_contest",
             contest_id=1
         })
-        expect.equal(res, expected_ok_res)
+        local expected_res = {
+            status = "accepted",
+            vouchers = {
+                {
+                    address = config.TOKEN_ERC20_ADDRESS,
+                    payload = encode_utils.encode_erc20_transfer_voucher{
+                        destination_address = ALICE_WALLET,
+                        amount = tohexbe('45300000000000000000'),
+                    },
+                }, {
+                    address = config.TOKEN_ERC20_ADDRESS,
+                    payload = encode_utils.encode_erc20_transfer_voucher{
+                        destination_address = BOB_WALLET,
+                        amount = tohexbe('90700000000000000000'),
+                    }
+                }, {
+                    address = config.TOKEN_ERC20_ADDRESS,
+                    payload = encode_utils.encode_erc20_transfer_voucher{
+                        destination_address = HOST_WALLET,
+                        amount = tohexbe(4 * e18),
+                    },
+                }
+            },
+            notices = {},
+            reports = {}
+        }
+        expect.equal(res, expected_res)
     end)
 
     it("should get active contest", function()
